@@ -1,8 +1,6 @@
-import csv
 from pathlib import Path
 from typing import List, Dict
 
-from langchain.output_parsers import RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
 from langchain.output_parsers.pydantic import PydanticOutputParser
@@ -11,6 +9,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable
 
 from dotenv import load_dotenv
+
+from loading import parse_remaining_omniclass_csv
 
 load_dotenv()
 
@@ -189,32 +189,6 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
         # write values
         for i in range(len(kv_columns.keys())):
             f.write(','.join([kv_columns[k][i] for k in kv_columns.keys()]) + '\n')
-
-
-def parse_remaining_omniclass_csv(path: Path) -> list[str]:
-    """ Parse the "remaining_omniclass.csv" file.
-
-    Parameters
-    ----------
-    path : Path
-        The path to the CSV file.
-
-    Returns
-    -------
-    None
-    """
-    # read both columns from the CSV file
-    if not path.is_file():
-        raise FileNotFoundError(f"Could not find file: {path}")
-
-    omniclass_names = []
-    with open(path, 'r') as f:
-        reader = csv.reader(f)
-
-        for row in reader:
-            omniclass_names.append(' '.join(row))
-
-    return omniclass_names
 
 
 if __name__ == '__main__':
