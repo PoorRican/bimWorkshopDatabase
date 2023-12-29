@@ -54,8 +54,7 @@ def process_product(product_name: str, chat: ChatOpenAI) -> Dict[str, List[str]]
     kv_columns = {}
     for parameter in parameters.parameters:
         values = value_chain.invoke({"parameter": parameter, "product": product_name})
-        print(f"Values for {parameter}:\n{values}")
-        kv_columns[parameter] = values
+        kv_columns[parameter] = values.values
 
     return kv_columns
 
@@ -80,12 +79,12 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
     fn_path = path.joinpath(fn)
 
     with open(fn_path, 'w') as f:
-        # write header
-        f.write(','.join(kv_columns.keys()) + '\n')
+        writer = csv.writer(f)
+        writer.writerow([i for i in kv_columns.keys()])
 
         # write values
         for i in range(len(kv_columns.keys())):
-            f.write(','.join([kv_columns[k][i] for k in kv_columns.keys()]) + '\n')
+            writer.writerow([kv_columns[k][i] for k in kv_columns.keys()])
 
 
 if __name__ == '__main__':
@@ -100,5 +99,4 @@ if __name__ == '__main__':
         print(f"Processing {product}")
 
         data = process_product(product, llm)
-        for k, v in data.items():
-            print(f"{k}: {v}")
+        save_product(save_path, product, data)
