@@ -2,6 +2,7 @@ import csv
 from pathlib import Path
 from typing import List, Dict
 
+from langchain.output_parsers import RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
 from langchain.output_parsers.pydantic import PydanticOutputParser
@@ -10,7 +11,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable
 
 from dotenv import load_dotenv
-from time import sleep
 
 load_dotenv()
 
@@ -20,7 +20,13 @@ class ParameterList(BaseModel):
     parameters: list[str]
 
 
-OUTPUT_PARSER = PydanticOutputParser(pydantic_object=ParameterList)
+class ValueList(BaseModel):
+    """ A list of values for a given BIM parameter """
+    values: list[str]
+
+
+PARAMETER_PARSER = PydanticOutputParser(pydantic_object=ParameterList)
+VALUE_PARSER = PydanticOutputParser(pydantic_object=ValueList)
 
 
 def build_parameter_chain(chat: ChatOpenAI, output_parser: PydanticOutputParser) -> Runnable:
@@ -44,23 +50,35 @@ def build_parameter_chain(chat: ChatOpenAI, output_parser: PydanticOutputParser)
     """
     prompt = PromptTemplate.from_template(
         """I am an architect and want to describe building products in detail.
-I am looking to create a list of 20 accurate, important and unique Parameters for an omniclass value.
+        
+I am looking to create a list of 20 accurate BIM Parameters for an omniclass.
 
-The omniclass we will be creating data for is {product}.""",
-        partial_variables={'format_instructions': output_parser.get_format_instructions()}
-    )
+Exclude manufacturer specific parameters such as manufacturer, serial number, model name, etc.
+Exclude parameters such as dimensions, weight, height, cost, etc.
 
-    parameter_generator_chain: Runnable = prompt | chat | StrOutputParser()
+These parameters should be pertinent to architecture and construction.
+
+Return a list of 20 parameters that are relevant to the {product} omniclass as a list of strings.
+
+Only return the parameter names, not the values or their descriptions.""")
 
     formatter_prompt = PromptTemplate.from_template(
-        """Format the following parameters as an object:
+        """Format the following:
+        
 {parameters}
 
 {format_instructions}""",
         partial_variables={'format_instructions': output_parser.get_format_instructions()}
     )
 
-    return {'parameters': parameter_generator_chain} | formatter_prompt | chat | output_parser
+    chain = prompt | chat | StrOutputParser()
+
+    return (
+        {'parameters': chain}
+        | formatter_prompt
+        | chat
+        | output_parser
+    )
 
 
 def build_parameter_value_chain(chat: ChatOpenAI, output_parser: PydanticOutputParser) -> Runnable:
@@ -84,25 +102,32 @@ def build_parameter_value_chain(chat: ChatOpenAI, output_parser: PydanticOutputP
     Runnable
         The chain of runnables to generate values.
     """
-    _generator_prompt = PromptTemplate.from_template(
-        """I am an architect and want to describe building products in detail.
-    
-I am looking to create a list of 20 accurate Values for an omniclass parameter.
+    prompt = PromptTemplate.from_template(
+        """I am an architect and want to describe building products in detail for use in BIM.
 
-The omniclass we will be creating data for is the {parameter} parameter for the {product} omniclass.""",
-    )
+Return a list of 20 values that are relevant to the {parameter} parameter for the omniclass {product}.
 
-    generator_chain = _generator_prompt | chat | output_parser
+These values should be pertinent to architecture and construction.
+
+Only return the values, not the parameter names or their descriptions.""")
 
     formatter_prompt = PromptTemplate.from_template(
-        """Format the following parameter values as an object:
+        """ Format the following list of parameter values according to the given schema:
+    
 {values}
-
+        
 {format_instructions}""",
         partial_variables={'format_instructions': output_parser.get_format_instructions()}
     )
 
-    return {'parameters': generator_chain} | formatter_prompt | chat | output_parser
+    chain = prompt | chat | StrOutputParser()
+
+    return (
+        {'values': chain}
+        | formatter_prompt
+        | chat
+        | output_parser
+    )
 
 
 def process_product(product_name: str, chat: ChatOpenAI) -> Dict[str, List[str]]:
@@ -123,18 +148,17 @@ def process_product(product_name: str, chat: ChatOpenAI) -> Dict[str, List[str]]
         A dictionary of parameter names to lists of values.
     """
     # generate parameters
-    parameter_chain = build_parameter_chain(chat, output_parser=OUTPUT_PARSER)
+    parameter_chain = build_parameter_chain(chat, output_parser=PARAMETER_PARSER)
 
-    parameters: ParameterList = parameter_chain.invoke({"product": product_name})
+    parameters = parameter_chain.invoke({"product": product_name})
 
     # generate values for each parameter
-    value_chain = build_parameter_value_chain(chat, output_parser=OUTPUT_PARSER)
+    value_chain = build_parameter_value_chain(chat, output_parser=VALUE_PARSER)
     kv_columns = {}
     for parameter in parameters.parameters:
-        _values = value_chain.invoke({"parameter": parameter, "product": product_name})
-        kv_columns[parameter] = _values.parameters
-        print(f"Finished {parameter}. Sleeping for 20 seconds.")
-        sleep(20)
+        values = value_chain.invoke({"parameter": parameter, "product": product_name})
+        print(f"Values for {parameter}:\n{values}")
+        kv_columns[parameter] = values
 
     return kv_columns
 
@@ -163,7 +187,7 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
         f.write(','.join(kv_columns.keys()) + '\n')
 
         # write values
-        for i in range(20):
+        for i in range(len(kv_columns.keys())):
             f.write(','.join([kv_columns[k][i] for k in kv_columns.keys()]) + '\n')
 
 
@@ -198,4 +222,12 @@ if __name__ == '__main__':
 
     products = parse_remaining_omniclass_csv(remaining_fn)
 
-    print(products)
+    llm = ChatOpenAI(model_name='gpt-3.5-turbo')
+    save_path = Path('data')
+
+    for product in products[:1]:
+        print(f"Processing {product}")
+
+        data = process_product(product, llm)
+        for k, v in data.items():
+            print(f"{k}: {v}")
