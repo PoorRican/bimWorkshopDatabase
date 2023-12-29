@@ -83,7 +83,7 @@ def build_parameter_value_chain(chat: ChatOpenAI, output_parser: PydanticOutputP
 
 Return a list of 20 values that are relevant to the {parameter} parameter for the omniclass {product}.
 
-These values should be pertinent to architecture and construction.
+These 20 values should be pertinent to {product} in the context of architecture and construction.
 
 Only return the values, not the parameter names or their descriptions.""")
 
