@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 from typing import List, Dict
 
@@ -8,7 +9,7 @@ from langchain_community.chat_models import ChatOpenAI
 from dotenv import load_dotenv
 
 from chains import build_parameter_chain, build_parameter_value_chain
-from loading import parse_remaining_omniclass_csv
+from loading import _parse_remaining_omniclass_csv
 
 load_dotenv()
 
@@ -90,7 +91,7 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
 if __name__ == '__main__':
     remaining_fn = Path('remaining_omniclass.csv')
 
-    products = parse_remaining_omniclass_csv(remaining_fn)
+    products = _parse_remaining_omniclass_csv(remaining_fn)
 
     llm = ChatOpenAI(model_name='gpt-3.5-turbo')
     save_path = Path('data')

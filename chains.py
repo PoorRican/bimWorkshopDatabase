@@ -31,6 +31,8 @@ I am looking to create a list of 20 accurate BIM Parameters for an omniclass.
 
 Exclude manufacturer specific parameters such as manufacturer, serial number, model name, etc.
 Exclude parameters such as dimensions, weight, height, cost, etc.
+Exclude parameters that deal with the installation or removal of the product.
+Exclude parameters that deal with appearance, aesthetics, or rendering of the product.
 
 These parameters should be pertinent to architecture and construction.
 
