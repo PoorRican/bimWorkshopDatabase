@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from langchain.output_parsers import PydanticOutputParser
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
@@ -5,7 +7,58 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import Runnable
 
 
-def build_parameter_chain(chat: ChatOpenAI, output_parser: PydanticOutputParser) -> Runnable:
+def extract_list_from_response(response: str) -> list[str]:
+    """ Extract a list of values from the response.
+
+    Parameters
+    ----------
+    response: str
+        The response to extract values from.
+
+    Returns
+    -------
+    list[str]
+        The list of values.
+    """
+    response = response.replace("```", "").replace("\n", "")
+
+    extracted: list[str] = eval("[" + response)
+    return extracted
+
+
+def build_explanation_chain(chat: ChatOpenAI) -> Runnable:
+    """ Build a chain of runnables to generate an explanation for a given product.
+
+    The runnable accepts a dictionary with the following key:
+    - product: The label of the product to generate an explanation for.
+
+    The output of the runnable is a parsed `str` object.
+
+    Parameters
+    ----------
+    chat : ChatOpenAI
+        The chatbot to use to generate an explanation.
+
+    Returns
+    -------
+    Runnable
+        The chain of runnables to generate an explanation.
+    """
+    explanatory_prompt = PromptTemplate.from_template(
+        """I will give you $30,000 which you can donate to the charity of your choice if your answer contains sufficient information that me, as an engineer, do not already know.
+
+I am an architect and engineer looking to learn more about the detail of a given product. We are currently in the design phase, and I want to know if there are attributes about a certain product of which I forgot about or am not aware of when specifying the requirements during the design phase.
+
+The goal is to provide an explanation of the non-obvious factors that I need to consider when selecting a product. I am looking to add data to an OmniClass table to use for specification purposes to send to a contractor.
+
+Please give me 20 parameters for {product}"""
+    )
+
+    explanatory_chain = explanatory_prompt | chat | StrOutputParser()
+    return explanatory_chain
+
+
+def build_parameter_chain(chat: ChatOpenAI) -> Runnable:
     """ Build a chain of runnables to generate a list of parameters for a given product.
 
     The runnable accepts a dictionary with the following key:
@@ -17,45 +70,29 @@ def build_parameter_chain(chat: ChatOpenAI, output_parser: PydanticOutputParser)
     ----------
     chat : ChatOpenAI
         The chatbot to use to generate parameters.
-    output_parser : PydanticOutputParser
-        The output parser to use to parse the parameters.
 
     Returns
     -------
     Runnable
     """
-    prompt = PromptTemplate.from_template(
-        """I am an architect and want to describe building products in detail.
+    # layer for explaining the product
+    # layer to extract parameters
+    parameter_prompt = PromptTemplate.from_template(
+        """I'm an engineer looking to understand the specific parameters I need to account for when selecting a product in an architectural design when specifying the requirements during the design phase.
         
-I am looking to create a list of 20 accurate BIM Parameters for an omniclass.
-
-Exclude manufacturer specific parameters such as manufacturer, serial number, model name, etc.
-Exclude parameters such as dimensions, weight, height, cost, etc.
-Exclude parameters that deal with the installation or removal of the product.
-Exclude parameters that deal with appearance, aesthetics, or rendering of the product.
-
-These parameters should be pertinent to architecture and construction.
-
-Return a list of 20 parameters that are relevant to the {product} omniclass as a list of strings.
-
-Only return the parameter names, not the values or their descriptions.""")
-
-    formatter_prompt = PromptTemplate.from_template(
-        """Format the following:
+Here is an explanation of the product:
+"{explanation}"
         
-{parameters}
-
-{format_instructions}""",
-        partial_variables={'format_instructions': output_parser.get_format_instructions()}
-    )
-
-    chain = prompt | chat | StrOutputParser()
+Please give me a python list of the most important or non-obvious parameters I need to consider during the design phase when specifying the requirements.
+        
+```python
+[
+""")
 
     return (
-        {'parameters': chain}
-        | formatter_prompt
-        | chat
-        | output_parser
+        {'explanation': itemgetter('explanation')}
+        | parameter_prompt
+        | chat | StrOutputParser()
     )
 
 

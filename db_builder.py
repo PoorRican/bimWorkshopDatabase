@@ -8,7 +8,8 @@ from langchain_community.chat_models import ChatOpenAI
 
 from dotenv import load_dotenv
 
-from chains import build_parameter_chain, build_parameter_value_chain
+from chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, \
+    build_explanation_chain
 from loading import _parse_remaining_omniclass_csv
 
 load_dotenv()
@@ -91,13 +92,20 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
 if __name__ == '__main__':
     remaining_fn = Path('remaining_omniclass.csv')
 
-    products = _parse_remaining_omniclass_csv(remaining_fn)
+    products = _parse_remaining_omniclass_csv(remaining_fn)[:1]
 
     llm = ChatOpenAI(model_name='gpt-3.5-turbo')
     save_path = Path('data')
 
-    for product in products[:1]:
+    for product in products:
         print(f"Processing {product}")
 
-        data = process_product(product, llm)
-        save_product(save_path, product, data)
+        # data = process_product(product, llm)
+        # save_product(save_path, product, data)
+        explanation_chain = build_explanation_chain(chat=llm)
+        parameter_chain = build_parameter_chain(llm)
+
+        explanation = explanation_chain.invoke({"product": product})
+        llm_response = parameter_chain.invoke({"product": product, "explanation": explanation})
+        parameters = extract_list_from_response(llm_response)
+        print(parameters)
