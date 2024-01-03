@@ -1,9 +1,8 @@
+import asyncio
 import csv
 from pathlib import Path
 from typing import List, Dict
 
-from langchain.pydantic_v1 import BaseModel
-from langchain.output_parsers.pydantic import PydanticOutputParser
 from langchain_community.chat_models import ChatOpenAI
 
 from dotenv import load_dotenv
@@ -14,55 +13,39 @@ from loading import _parse_remaining_omniclass_csv
 
 load_dotenv()
 
+SAVE_PATH = Path('data')
 
 GPT4 = ChatOpenAI(model_name='gpt-4')
 GPT3 = ChatOpenAI(model_name='gpt-3.5-turbo')
 
 
-class ParameterList(BaseModel):
-    """ This is used to accept a parsed list of parameters from the chatbot."""
-    parameters: list[str]
+EXPLANATION_CHAIN = build_explanation_chain(GPT4)
+PARAMETER_CHAIN = build_parameter_chain(GPT3)
+VALUE_CHAIN = build_parameter_value_chain(GPT4, GPT3)
 
 
-class ValueList(BaseModel):
-    """ A list of values for a given BIM parameter """
-    values: list[str]
+async def generate_parameters(product_name: str) -> list[str]:
+    explanation = await EXPLANATION_CHAIN.ainvoke({"product": product_name})
+    llm_response = await PARAMETER_CHAIN.ainvoke({"product": product_name, "explanation": explanation})
+    return extract_list_from_response(llm_response)
 
 
-PARAMETER_PARSER = PydanticOutputParser(pydantic_object=ParameterList)
-VALUE_PARSER = PydanticOutputParser(pydantic_object=ValueList)
-
-
-def process_product(product_name: str, chat: ChatOpenAI) -> Dict[str, List[str]]:
-    """ Generate a list of parameters and values for a given product name.
-
-    A call to `sleep()` is internally made to avoid OpenAI's rate limits.
-
-    Parameters
-    ----------
-    product_name : str
-        The name of the product to generate parameters and values for.
-    chat : ChatOpenAI
-        The chatbot to use to generate parameters and values.
-
-    Returns
-    -------
-    Dict[str, List[str]]
-        A dictionary of parameter names to lists of values.
-    """
-    # generate parameters
-    parameter_chain = build_parameter_chain(chat, output_parser=PARAMETER_PARSER)
-
-    parameters = parameter_chain.invoke({"product": product_name})
-
-    # generate values for each parameter
-    value_chain = build_parameter_value_chain(chat, output_parser=VALUE_PARSER)
+async def generate_all_values(product_name: str, parameters: list[str]) -> Dict[str, List[str]]:
     kv_columns = {}
-    for parameter in parameters.parameters:
-        values = value_chain.invoke({"parameter": parameter, "product": product_name})
-        kv_columns[parameter] = values.values
+
+    tasks = [generate_values(product_name, parameter) for parameter in parameters]
+
+    for parameter, values in zip(parameters, await asyncio.gather(*tasks)):
+        kv_columns[parameter] = values
 
     return kv_columns
+
+
+async def generate_values(product_name: str, parameter: str) -> list[str]:
+    value_response = await VALUE_CHAIN.ainvoke({
+        "parameter": parameter,
+        "product": product_name})
+    return extract_list_from_response(value_response)
 
 
 def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]) -> None:
@@ -93,40 +76,29 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
             writer.writerow([kv_columns[k][i] for k in kv_columns.keys()])
 
 
+async def process_product(product_name: str):
+    parameters = await generate_parameters(product_name)
+    kv_columns = await generate_all_values(product_name, parameters)
+    save_product(SAVE_PATH, product_name, kv_columns)
+
+
+async def run_all(products: list[str]):
+    # tasks = [process_product(product) for product in products]
+    # await asyncio.gather(*tasks)
+    for product in products:
+        print(f'Processing {product}')
+        await process_product(product)
+
+
 if __name__ == '__main__':
     remaining_fn = Path('remaining_omniclass.csv')
 
     # products = _parse_remaining_omniclass_csv(remaining_fn)
-    products = [
+    PRODUCTS = [
         'Roof Coverings',
         'Porcelain Glazing Laboratory Furnaces',
         'Vacuum Porcelain Furnaces',
         'Audio Security Sensors'
     ]
 
-    llm = ChatOpenAI(model_name='gpt-3.5-turbo')
-    save_path = Path('data')
-
-    for product in products:
-        print(f"Processing {product}")
-
-        # data = process_product(product, llm)
-        # save_product(save_path, product, data)
-        explanation_chain = build_explanation_chain(GPT4)
-        parameter_chain = build_parameter_chain(GPT3)
-        value_chain = build_parameter_value_chain(GPT4, GPT3)
-
-        explanation = explanation_chain.invoke({"product": product})
-        llm_response = parameter_chain.invoke({"product": product, "explanation": explanation})
-        parameters = extract_list_from_response(llm_response)
-
-        data = {}
-        for parameter in parameters:
-            value_response = value_chain.invoke({
-                "parameter": parameter,
-                "product": product,
-                "explanation": explanation})
-            values = extract_list_from_response(value_response)
-            data[parameter] = values
-        print(data)
-
+    asyncio.run(run_all(PRODUCTS))
