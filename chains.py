@@ -23,7 +23,13 @@ def extract_list_from_response(response: str) -> list[str]:
     # remove any text after "]"
     response = response.split("]")[0]
 
-    extracted: list[str] = eval("[" + response + "]")
+    if response[0] != "[":
+        response = "[" + response
+
+    if response[-1] != "]":
+        response = response + "]"
+
+    extracted: list[str] = eval(response)
     return extracted
 
 
