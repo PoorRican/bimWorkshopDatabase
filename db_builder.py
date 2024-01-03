@@ -15,6 +15,10 @@ from loading import _parse_remaining_omniclass_csv
 load_dotenv()
 
 
+GPT4 = ChatOpenAI(model_name='gpt-4')
+GPT3 = ChatOpenAI(model_name='gpt-3.5-turbo')
+
+
 class ParameterList(BaseModel):
     """ This is used to accept a parsed list of parameters from the chatbot."""
     parameters: list[str]
@@ -92,7 +96,13 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
 if __name__ == '__main__':
     remaining_fn = Path('remaining_omniclass.csv')
 
-    products = _parse_remaining_omniclass_csv(remaining_fn)[:1]
+    # products = _parse_remaining_omniclass_csv(remaining_fn)
+    products = [
+        'Roof Coverings',
+        'Porcelain Glazing Laboratory Furnaces',
+        'Vacuum Porcelain Furnaces',
+        'Audio Security Sensors'
+    ]
 
     llm = ChatOpenAI(model_name='gpt-3.5-turbo')
     save_path = Path('data')
@@ -102,10 +112,21 @@ if __name__ == '__main__':
 
         # data = process_product(product, llm)
         # save_product(save_path, product, data)
-        explanation_chain = build_explanation_chain(chat=llm)
-        parameter_chain = build_parameter_chain(llm)
+        explanation_chain = build_explanation_chain(GPT4)
+        parameter_chain = build_parameter_chain(GPT3)
+        value_chain = build_parameter_value_chain(GPT4, GPT3)
 
         explanation = explanation_chain.invoke({"product": product})
         llm_response = parameter_chain.invoke({"product": product, "explanation": explanation})
         parameters = extract_list_from_response(llm_response)
-        print(parameters)
+
+        data = {}
+        for parameter in parameters:
+            value_response = value_chain.invoke({
+                "parameter": parameter,
+                "product": product,
+                "explanation": explanation})
+            values = extract_list_from_response(value_response)
+            data[parameter] = values
+        print(data)
+

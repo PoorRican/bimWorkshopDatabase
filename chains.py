@@ -20,9 +20,10 @@ def extract_list_from_response(response: str) -> list[str]:
     list[str]
         The list of values.
     """
-    response = response.replace("```", "").replace("\n", "")
+    # remove any text after "]"
+    response = response.split("]")[0]
 
-    extracted: list[str] = eval("[" + response)
+    extracted: list[str] = eval("[" + response + "]")
     return extracted
 
 
@@ -96,7 +97,7 @@ Please give me a python list of the most important or non-obvious parameters I n
     )
 
 
-def build_parameter_value_chain(chat: ChatOpenAI, output_parser: PydanticOutputParser) -> Runnable:
+def build_parameter_value_chain(chat: ChatOpenAI, parse_chat: ChatOpenAI) -> Runnable:
     """ Build a chain of runnables to generate a list of values for a given parameter.
 
     The runnable accepts a dictionary with the following keys:
@@ -126,20 +127,34 @@ These 20 values should be pertinent to {product} in the context of architecture 
 
 Only return the values, not the parameter names or their descriptions.""")
 
-    formatter_prompt = PromptTemplate.from_template(
-        """ Format the following list of parameter values according to the given schema:
-    
-{values}
-        
-{format_instructions}""",
-        partial_variables={'format_instructions': output_parser.get_format_instructions()}
+    chain = (
+        prompt
+        | chat
+        | StrOutputParser()
     )
 
-    chain = prompt | chat | StrOutputParser()
+    formatter_prompt = PromptTemplate.from_template(
+        """Please format the given list as a valid python list:
+
+For example:
+1. foo
+2. bar
+
+becomes:
+```python
+["foo", "bar"]
+```
+
+Here is the list of values:
+{values}
+
+```python
+[
+""")
 
     return (
         {'values': chain}
         | formatter_prompt
-        | chat
-        | output_parser
+        | parse_chat
+        | StrOutputParser()
     )
