@@ -24,11 +24,20 @@ VALUE_CHAIN = build_parameter_value_chain(GPT3_LOW_T, GPT3_LOW_T)
 FORMATTER_CHAIN = build_formatter_chain(GPT3_LOW_T)
 
 
-async def generate_parameters(product_name: str) -> (AIMessage, list[str]):
+async def _generate_parameters(product_name: str) -> (AIMessage, list[str]):
     llm_response = await PARAMETER_CHAIN.ainvoke({"omniclass": product_name})
     formatted = await FORMATTER_CHAIN.ainvoke({"content": llm_response.content})
     parameter_list = extract_list_from_response(formatted)
     return llm_response, parameter_list
+
+
+async def generate_parameters(product_name: str) -> (AIMessage, list[str]):
+    while True:
+        ai_message, parameters = await _generate_parameters(product_name)
+        if len(parameters) == 20:
+            return ai_message, parameters
+        else:
+            print("Got less than 20 parameters, retrying...")
 
 
 async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> Dict[str, List[str]]:
@@ -66,12 +75,21 @@ async def generate_all_values(product_name: str, parameters: list[str], ai_messa
     return kv_columns
 
 
-async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage) -> list[str]:
+async def _generate_values(product_name: str, ordinal: str, ai_message: AIMessage) -> list[str]:
     value_response = await VALUE_CHAIN.ainvoke({
         "ordinal": ordinal,
         "ai_message": [ai_message],
         "omniclass": product_name})
     return extract_list_from_response(value_response)
+
+
+async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage) -> list[str]:
+    while True:
+        values = await _generate_values(product_name, ordinal, ai_message)
+        if len(values) == 20:
+            return values
+        else:
+            print("Got less than 20 values, retrying...")
 
 
 def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]) -> None:
