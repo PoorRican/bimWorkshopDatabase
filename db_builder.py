@@ -11,12 +11,10 @@ from langchain_core.messages import AIMessage
 from openai import RateLimitError
 
 from chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
-from loading import parse_remaining, OmniClass
+from loading import OmniClass
 
 load_dotenv()
 
-CHUNK_SIZE = 3
-remaining_fn = Path('remaining_omniclass.csv')
 SAVE_PATH = Path('data')
 
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
@@ -143,25 +141,3 @@ async def process_product(omniclass: OmniClass):
     kv_columns = await generate_all_values(omniclass_name, parameters, ai_message)
     save_product(SAVE_PATH, omniclass, kv_columns)
     print(f"\n*** ...Done processing {omniclass_name}. ***\n")
-
-
-async def run_all(omniclasses: list[OmniClass]):
-    # give some feedback on how many products are being processed
-    print(f"Processing {len(OMNICLASS_LIST)} products...")
-
-    # wait 5 seconds before starting
-    print("Processing will start in 5 seconds... (press Ctrl+C to cancel at any time)")
-    await sleep(5)
-
-    # chunk products into groups of CHUNK_SIZE
-    chunks = [omniclasses[i:i + CHUNK_SIZE] for i in range(0, len(omniclasses), CHUNK_SIZE)]
-    for chunk in chunks:
-        tasks = [process_product(product_name) for product_name in chunk]
-        await asyncio.gather(*tasks)
-
-
-if __name__ == '__main__':
-
-    OMNICLASS_LIST = parse_remaining(remaining_fn)
-
-    asyncio.run(run_all(OMNICLASS_LIST))
