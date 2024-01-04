@@ -1,8 +1,8 @@
 from asyncio import sleep, gather, run
 from pathlib import Path
 
-from db_builder import process_product
-from loading import OmniClass, parse_remaining
+from src.db_builder import process_product
+from src.loading import OmniClass, parse_remaining
 
 CHUNK_SIZE = 3
 REMAINING_FN = Path('remaining_omniclass.csv')

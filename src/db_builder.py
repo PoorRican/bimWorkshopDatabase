@@ -10,12 +10,12 @@ from dotenv import load_dotenv
 from langchain_core.messages import AIMessage
 from openai import RateLimitError
 
-from chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
-from loading import OmniClass
+from src.chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
+from src.loading import OmniClass
 
 load_dotenv()
 
-SAVE_PATH = Path('data')
+SAVE_PATH = Path('../data')
 
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
 GPT3_HIGH_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.9)
