@@ -11,7 +11,7 @@ from langchain_core.messages import AIMessage
 from openai import RateLimitError
 
 from chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
-from loading import _parse_remaining_omniclass_csv
+from loading import parse_remaining, OmniClass
 
 load_dotenv()
 
@@ -108,15 +108,15 @@ async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage
             print(f"Could not understand response when generating values for {feedback_msg}, retrying...")
 
 
-def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]) -> None:
+def save_product(path: Path, omniclass: OmniClass, kv_columns: Dict[str, List[str]]) -> None:
     """ Save a product's parameters and values to a CSV file.
 
     Parameters
     ----------
     path : Path
         The path to save the final CSV file to.
-    product_name : str
-        The name of the product to save. Used as the filename.
+    omniclass : OmniClass
+        The OmniClass value. This is used to generate the filename.
     kv_columns : Dict[str, List[str]]
         A dictionary of parameter names to lists of values.
 
@@ -124,7 +124,7 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
     -------
     None
     """
-    fn = f'{product_name}.csv'
+    fn = f'{omniclass.number} {omniclass.name}.csv'
     fn_path = path.joinpath(fn)
 
     with open(fn_path, 'w') as f:
@@ -136,17 +136,25 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
             writer.writerow([kv_columns[k][i] for k in kv_columns.keys()])
 
 
-async def process_product(product_name: str):
-    print(f"\n*** Processing {product_name}...")
-    ai_message, parameters = await generate_parameters(product_name)
-    kv_columns = await generate_all_values(product_name, parameters, ai_message)
-    save_product(SAVE_PATH, product_name, kv_columns)
-    print(f"\n*** ...Done processing {product_name}. ***\n")
+async def process_product(omniclass: OmniClass):
+    omniclass_name = omniclass.name
+    print(f"\n*** Processing {omniclass_name}...")
+    ai_message, parameters = await generate_parameters(omniclass_name)
+    kv_columns = await generate_all_values(omniclass_name, parameters, ai_message)
+    save_product(SAVE_PATH, omniclass, kv_columns)
+    print(f"\n*** ...Done processing {omniclass_name}. ***\n")
 
 
-async def run_all(products: list[str]):
+async def run_all(omniclasses: list[OmniClass]):
+    # give some feedback on how many products are being processed
+    print(f"Processing {len(OMNICLASS_LIST)} products...")
+
+    # wait 5 seconds before starting
+    print("Processing will start in 5 seconds... (press Ctrl+C to cancel at any time)")
+    await sleep(5)
+
     # chunk products into groups of CHUNK_SIZE
-    chunks = [products[i:i + CHUNK_SIZE] for i in range(0, len(products), CHUNK_SIZE)]
+    chunks = [omniclasses[i:i + CHUNK_SIZE] for i in range(0, len(omniclasses), CHUNK_SIZE)]
     for chunk in chunks:
         tasks = [process_product(product_name) for product_name in chunk]
         await asyncio.gather(*tasks)
@@ -154,12 +162,6 @@ async def run_all(products: list[str]):
 
 if __name__ == '__main__':
 
-    # products = _parse_remaining_omniclass_csv(remaining_fn)
-    PRODUCTS = [
-        'Roof Coverings',
-        'Porcelain Glazing Laboratory Furnaces',
-        'Vacuum Porcelain Furnaces',
-        'Audio Security Sensors'
-    ]
+    OMNICLASS_LIST = parse_remaining(remaining_fn)
 
-    asyncio.run(run_all(PRODUCTS))
+    asyncio.run(run_all(OMNICLASS_LIST))

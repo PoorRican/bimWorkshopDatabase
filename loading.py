@@ -1,8 +1,19 @@
 import csv
+from dataclasses import dataclass
 from pathlib import Path
 
 
-def _parse_remaining_omniclass_csv(path: Path) -> list[str]:
+@dataclass
+class OmniClass:
+    """ A class to represent an OmniClass product.
+
+    This is used to store the name of the product and the name of the CSV file that was generated for it.
+    """
+    number: str
+    name: str
+
+
+def parse_remaining(path: Path) -> list[OmniClass]:
     """ Parse the "remaining_omniclass.csv" file.
 
     Parameters
@@ -23,7 +34,8 @@ def _parse_remaining_omniclass_csv(path: Path) -> list[str]:
         reader = csv.reader(f)
 
         for row in reader:
-            omniclass_names.append(' '.join(row))
+            omniclass = OmniClass(row[0], row[1])
+            omniclass_names.append(omniclass)
 
     return omniclass_names
 
@@ -115,7 +127,7 @@ def get_remaining(remaining_path: Path, completed_path: Path) -> list[str]:
     list[str]
         The list of remaining omniclasses.
     """
-    remaining = _parse_remaining_omniclass_csv(remaining_path)
+    remaining = parse_remaining(remaining_path)
     completed = _load_completed(completed_path)
 
     return _extract_remaining(completed, remaining)
