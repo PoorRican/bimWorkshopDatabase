@@ -15,6 +15,7 @@ from loading import _parse_remaining_omniclass_csv
 
 load_dotenv()
 
+CHUNK_SIZE = 3
 remaining_fn = Path('remaining_omniclass.csv')
 SAVE_PATH = Path('data')
 
@@ -44,9 +45,7 @@ async def generate_parameters(product_name: str) -> (AIMessage, list[str]):
             else:
                 print(f"Got less than 20 {feedback_msg}, retrying...")
         except RateLimitError:
-            await sleep(30)
-            print(f"OpenAI limit exceeded when generating {feedback_msg}, "
-                  "retrying in 30s...")
+            await sleep(15)
         except SyntaxError:
             print(f"Could not understand response when generating {feedback_msg}, retrying...")
 
@@ -105,8 +104,6 @@ async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage
                 print(f"Got less than 20 values for {feedback_msg}, retrying...")
         except RateLimitError:
             await sleep(30)
-            print(f"OpenAI limit exceeded when generating values for {feedback_msg}, "
-                  "retrying in 30s...")
         except SyntaxError:
             print(f"Could not understand response when generating values for {feedback_msg}, retrying...")
 
@@ -140,15 +137,19 @@ def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]
 
 
 async def process_product(product_name: str):
+    print(f"\n*** Processing {product_name}...")
     ai_message, parameters = await generate_parameters(product_name)
     kv_columns = await generate_all_values(product_name, parameters, ai_message)
     save_product(SAVE_PATH, product_name, kv_columns)
+    print(f"\n*** ...Done processing {product_name}. ***\n")
 
 
 async def run_all(products: list[str]):
-    for product in products:
-        print(f'\n*** Processing: \"{product}\" ***')
-        await process_product(product)
+    # chunk products into groups of CHUNK_SIZE
+    chunks = [products[i:i + CHUNK_SIZE] for i in range(0, len(products), CHUNK_SIZE)]
+    for chunk in chunks:
+        tasks = [process_product(product_name) for product_name in chunk]
+        await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
