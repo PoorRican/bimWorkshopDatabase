@@ -1,5 +1,6 @@
 import asyncio
 import csv
+from asyncio import sleep
 from pathlib import Path
 from typing import List, Dict
 
@@ -7,12 +8,14 @@ from langchain_community.chat_models import ChatOpenAI
 
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage
+from openai import RateLimitError
 
 from chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
 from loading import _parse_remaining_omniclass_csv
 
 load_dotenv()
 
+remaining_fn = Path('remaining_omniclass.csv')
 SAVE_PATH = Path('data')
 
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
@@ -32,12 +35,20 @@ async def _generate_parameters(product_name: str) -> (AIMessage, list[str]):
 
 
 async def generate_parameters(product_name: str) -> (AIMessage, list[str]):
+    feedback_msg = f"parameters for {product_name}"
     while True:
-        ai_message, parameters = await _generate_parameters(product_name)
-        if len(parameters) == 20:
-            return ai_message, parameters
-        else:
-            print("Got less than 20 parameters, retrying...")
+        try:
+            ai_message, parameters = await _generate_parameters(product_name)
+            if len(parameters) == 20:
+                return ai_message, parameters
+            else:
+                print(f"Got less than 20 {feedback_msg}, retrying...")
+        except RateLimitError:
+            await sleep(30)
+            print(f"OpenAI limit exceeded when generating {feedback_msg}, "
+                  "retrying in 30s...")
+        except SyntaxError:
+            print(f"Could not understand response when generating {feedback_msg}, retrying...")
 
 
 async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> Dict[str, List[str]]:
@@ -84,12 +95,20 @@ async def _generate_values(product_name: str, ordinal: str, ai_message: AIMessag
 
 
 async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage) -> list[str]:
+    feedback_msg = f"{ordinal} parameter for {product_name}"
     while True:
-        values = await _generate_values(product_name, ordinal, ai_message)
-        if len(values) == 20:
-            return values
-        else:
-            print("Got less than 20 values, retrying...")
+        try:
+            values = await _generate_values(product_name, ordinal, ai_message)
+            if len(values) == 20:
+                return values
+            else:
+                print(f"Got less than 20 values for {feedback_msg}, retrying...")
+        except RateLimitError:
+            await sleep(30)
+            print(f"OpenAI limit exceeded when generating values for {feedback_msg}, "
+                  "retrying in 30s...")
+        except SyntaxError:
+            print(f"Could not understand response when generating values for {feedback_msg}, retrying...")
 
 
 def save_product(path: Path, product_name: str, kv_columns: Dict[str, List[str]]) -> None:
@@ -127,15 +146,12 @@ async def process_product(product_name: str):
 
 
 async def run_all(products: list[str]):
-    # tasks = [process_product(product) for product in products]
-    # await asyncio.gather(*tasks)
     for product in products:
-        print(f'Processing {product}')
+        print(f'\n*** Processing: \"{product}\" ***')
         await process_product(product)
 
 
 if __name__ == '__main__':
-    remaining_fn = Path('remaining_omniclass.csv')
 
     # products = _parse_remaining_omniclass_csv(remaining_fn)
     PRODUCTS = [
