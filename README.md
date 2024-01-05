@@ -74,3 +74,14 @@ Once the terminal window says "Done!", you can close the terminal window.
 Be sure to move the generated CSV files from the "data" folder, and delete the "remaining.csv" file. Running the program
 is costly in terms of API calls, so it is best to run the program once and not to run the same list of omniclasses again
 unless you have to.
+
+# Editing Prompts
+
+The prompts used to generate the parameters are "PARAMETER_PROMPT.txt" and "VALUE_PROMPT.txt". These files are located
+in the top-level. You can edit these files to change the prompts used to generate the parameters.
+
+The parameter prompt *needs* to have the `{omniclass}` placeholder in it. This is where the product/omniclass name will
+be inserted.
+
+Likewise, the value prompt *needs* to have the `{ordinal}` placeholder in it. This is where the ordinal number (ie:
+"first", "2nd"...) will be inserted.
