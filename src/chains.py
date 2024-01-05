@@ -3,17 +3,17 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 
+PARAMETER_PROMPT_FILE = "PARAMETER_PROMPT.txt"
 
 PARAMETER_PROMPT = HumanMessagePromptTemplate.from_template(
-    """I am an architect and want to describe building products in detail. I am looking to create a list of accurate Parameters and values for Products from an omniclass value.
+    open(PARAMETER_PROMPT_FILE, "r").read()
+)
 
-The omniclass we will be creating data for is {omniclass}
-
-Create a list of the top 20 parameters for this omniclass.""")
-
+VALUE_PROMPT_FILE = "VALUE_PROMPT.txt"
 
 VALUE_PROMPT = HumanMessagePromptTemplate.from_template(
-    """Create an exhaustive list of the top 20 specific values for the {ordinal} parameter.""")
+    open(VALUE_PROMPT_FILE, "r").read()
+)
 
 
 FORMAT_PROMPT = PromptTemplate.from_template(

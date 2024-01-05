@@ -1,0 +1,5 @@
+I am an architect and want to describe building products in detail. I am looking to create a list of accurate Parameters and values for Products from an omniclass value.
+
+The omniclass we will be creating data for is {omniclass}
+
+Create a list of the top 20 parameters for this omniclass.
