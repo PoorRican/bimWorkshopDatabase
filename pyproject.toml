@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "db_builder"
+version = "0.0.1"
+dependencies = [
+    "langchain",
+    'python-dotenv',
+    'openai',
+]
