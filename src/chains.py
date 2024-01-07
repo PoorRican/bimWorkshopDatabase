@@ -3,6 +3,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 
+print(__file__)
+
 PARAMETER_PROMPT_FILE = "PARAMETER_PROMPT.txt"
 
 PARAMETER_PROMPT = HumanMessagePromptTemplate.from_template(
