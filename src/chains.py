@@ -1,17 +1,19 @@
+from pathlib import Path
+
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 
-print(__file__)
+_ROOT = Path(__file__).parent.parent
 
-PARAMETER_PROMPT_FILE = "PARAMETER_PROMPT.txt"
+PARAMETER_PROMPT_FILE = _ROOT.joinpath("PARAMETER_PROMPT.txt")
 
 PARAMETER_PROMPT = HumanMessagePromptTemplate.from_template(
     open(PARAMETER_PROMPT_FILE, "r").read()
 )
 
-VALUE_PROMPT_FILE = "VALUE_PROMPT.txt"
+VALUE_PROMPT_FILE = _ROOT.joinpath("VALUE_PROMPT.txt")
 
 VALUE_PROMPT = HumanMessagePromptTemplate.from_template(
     open(VALUE_PROMPT_FILE, "r").read()
