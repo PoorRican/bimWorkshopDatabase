@@ -3,7 +3,7 @@
 from asyncio import sleep, gather, run
 from pathlib import Path
 
-from src.db_builder import process_product, SAVE_PATH, OmniClass
+from src.builder_functions import process_product, SAVE_PATH, OmniClass
 from src.loading import parse_remaining
 
 CHUNK_SIZE = 3
