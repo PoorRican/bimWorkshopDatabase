@@ -2,7 +2,7 @@ import asyncio
 import csv
 from asyncio import sleep
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Iterator, Coroutine, Any
 
 from langchain_community.chat_models import ChatOpenAI
 
@@ -12,10 +12,33 @@ from openai import RateLimitError
 
 from .chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
 from .loading import OmniClass
+from .typedefs import Parameter
 
 load_dotenv()
 
 SAVE_PATH = Path('../data')
+ORDINALS = [
+    "first",
+    "2nd",
+    "3rd",
+    "4th",
+    "5th",
+    "6th",
+    "7th",
+    "8th",
+    "9th",
+    "10th",
+    "11th",
+    "12th",
+    "13th",
+    "14th",
+    "15th",
+    "16th",
+    "17th",
+    "18th",
+    "19th",
+    "twentieth"
+]
 
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
 GPT3_HIGH_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.9)
@@ -48,37 +71,28 @@ async def generate_parameters(product_name: str) -> (AIMessage, list[str]):
             print(f"Could not understand response when generating {feedback_msg}, retrying...")
 
 
-async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> Dict[str, List[str]]:
-    assert len(parameters) == 20
+def value_coroutines(product_name: str, ai_message: AIMessage,
+                     parameters: list[str]) -> list[Coroutine[Any, Any, Parameter]]:
+    """ Generate coroutines for generating all values for a given product.
 
-    ordinals = [
-        "first",
-        "2nd",
-        "3rd",
-        "4th",
-        "5th",
-        "6th",
-        "7th",
-        "8th",
-        "9th",
-        "10th",
-        "11th",
-        "12th",
-        "13th",
-        "14th",
-        "15th",
-        "16th",
-        "17th",
-        "18th",
-        "19th",
-        "twentieth"
-    ]
+    This is used in `generate_all_values` and in the backend to asynchronously load values.
+    """
+    assert len(parameters) == len(ORDINALS)
+
+    return [generate_values(product_name, ordinal, ai_message, parameter) for ordinal, parameter in zip(ORDINALS, parameters)]
+
+
+async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> Dict[str, List[str]]:
+    """ Generate all values for a given product in a synchronous manner.
+
+    This is to be used when locally generating a CSV file.
+    """
+    tasks = value_coroutines(product_name, ai_message, parameters)
+
     kv_columns = {}
 
-    tasks = [generate_values(product_name, ordinal, ai_message) for ordinal in ordinals]
-
-    for parameter, values in zip(parameters, await asyncio.gather(*tasks)):
-        kv_columns[parameter] = values
+    for parameter in await asyncio.gather(*tasks):
+        kv_columns[parameter.name] = parameter.values
 
     return kv_columns
 
@@ -91,13 +105,13 @@ async def _generate_values(product_name: str, ordinal: str, ai_message: AIMessag
     return extract_list_from_response(value_response)
 
 
-async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage) -> list[str]:
+async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage, parameter_name: str) -> Parameter:
     feedback_msg = f"{ordinal} parameter for {product_name}"
     while True:
         try:
             values = await _generate_values(product_name, ordinal, ai_message)
             if len(values) == 20:
-                return values
+                return Parameter(parameter_name, values)
             else:
                 print(f"Got less than 20 values for {feedback_msg}, retrying...")
         except RateLimitError:
