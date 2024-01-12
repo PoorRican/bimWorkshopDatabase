@@ -83,5 +83,5 @@ in the top-level. You can edit these files to change the prompts used to generat
 The parameter prompt *needs* to have the `{omniclass}` placeholder in it. This is where the product/omniclass name will
 be inserted.
 
-Likewise, the value prompt *needs* to have the `{ordinal}` placeholder in it. This is where the ordinal number (ie:
-"first", "2nd"...) will be inserted.
+Likewise, the value prompt *needs* to have the `{parameter}` placeholder in it. This is where the parameter name
+will be inserted.

@@ -2,7 +2,7 @@ import asyncio
 import csv
 from asyncio import sleep
 from pathlib import Path
-from typing import List, Dict, Iterator, Coroutine, Any
+from typing import List, Dict, Coroutine, Any
 
 from langchain_community.chat_models import ChatOpenAI
 
@@ -17,28 +17,6 @@ from .typedefs import Parameter
 load_dotenv()
 
 SAVE_PATH = Path('../data')
-ORDINALS = [
-    "first",
-    "2nd",
-    "3rd",
-    "4th",
-    "5th",
-    "6th",
-    "7th",
-    "8th",
-    "9th",
-    "10th",
-    "11th",
-    "12th",
-    "13th",
-    "14th",
-    "15th",
-    "16th",
-    "17th",
-    "18th",
-    "19th",
-    "twentieth"
-]
 
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
 GPT3_HIGH_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.9)
@@ -77,9 +55,7 @@ def value_coroutines(product_name: str, ai_message: AIMessage,
 
     This is used in `generate_all_values` and in the backend to asynchronously load values.
     """
-    assert len(parameters) == len(ORDINALS)
-
-    return [generate_values(product_name, ordinal, ai_message, parameter) for ordinal, parameter in zip(ORDINALS, parameters)]
+    return [generate_values(product_name, ai_message, parameter) for parameter in parameters]
 
 
 async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> Dict[str, List[str]]:
@@ -97,19 +73,19 @@ async def generate_all_values(product_name: str, parameters: list[str], ai_messa
     return kv_columns
 
 
-async def _generate_values(product_name: str, ordinal: str, ai_message: AIMessage) -> list[str]:
+async def _generate_values(product_name: str, parameter: str, ai_message: AIMessage) -> list[str]:
     value_response = await VALUE_CHAIN.ainvoke({
-        "ordinal": ordinal,
+        "parameter": parameter,
         "ai_message": [ai_message],
         "omniclass": product_name})
     return extract_list_from_response(value_response)
 
 
-async def generate_values(product_name: str, ordinal: str, ai_message: AIMessage, parameter_name: str) -> Parameter:
-    feedback_msg = f"{ordinal} parameter for {product_name}"
+async def generate_values(product_name: str, ai_message: AIMessage, parameter_name: str) -> Parameter:
+    feedback_msg = f"{parameter_name} parameter for {product_name}"
     while True:
         try:
-            values = await _generate_values(product_name, ordinal, ai_message)
+            values = await _generate_values(product_name, parameter_name, ai_message)
             if len(values) == 20:
                 return Parameter(parameter_name, values)
             else:
