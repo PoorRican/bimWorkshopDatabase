@@ -16,7 +16,7 @@ from .typedefs import Parameter
 
 load_dotenv()
 
-SAVE_PATH = Path('../data')
+SAVE_PATH = Path('../../data')
 
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
 GPT3_HIGH_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.9)
