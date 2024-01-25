@@ -11,8 +11,7 @@ from langchain_core.messages import AIMessage
 from openai import RateLimitError
 
 from .chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
-from db_builders.loading import OmniClass
-from .typedefs import Parameter
+from db_builders.typedefs import OmniClass, Parameter
 
 load_dotenv()
 

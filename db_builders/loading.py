@@ -1,16 +1,7 @@
 import csv
-from dataclasses import dataclass
 from pathlib import Path
 
-
-@dataclass
-class OmniClass:
-    """ A class to represent an OmniClass product.
-
-    This is used to store the name of the product and the name of the CSV file that was generated for it.
-    """
-    number: str
-    name: str
+from db_builders.typedefs import OmniClass
 
 
 def parse_remaining(path: Path) -> list[OmniClass]:
