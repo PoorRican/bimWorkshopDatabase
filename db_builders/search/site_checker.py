@@ -3,6 +3,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
+from db_builders.utils import retry_on_ratelimit
+
 _DESCRIPTION_EXPAND_PROMPT = PromptTemplate.from_template(
     """ You will be given the title, URL, and description of a search result.
 
@@ -54,6 +56,7 @@ class SiteChecker(object):
         else:
             raise ValueError(f"Invalid response from LLM: {response}")
 
+    @retry_on_ratelimit()
     async def __call__(self, title: str, url: str, description: str) -> bool:
         """ Check if a site is a manufacturer site.
 

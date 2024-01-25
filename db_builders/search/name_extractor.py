@@ -6,6 +6,8 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from openai import RateLimitError
 
+from db_builders.utils import retry_on_ratelimit
+
 _PROMPT = PromptTemplate.from_template(
     """You will be given the title, description, and URL of a company website.
 
@@ -40,6 +42,7 @@ class NameExtractor(object):
 
         return cleaned
 
+    @retry_on_ratelimit()
     async def __call__(self, title: str, url: str, description: str) -> str:
         """ Extract the name of a company from a search result. """
         while True:
