@@ -4,10 +4,10 @@ from typing import List
 from googlesearch import search
 from langchain_openai import ChatOpenAI
 
+from db_builders.typedefs import Manufacturer
 from .name_extractor import NameExtractor
-from manufacturers.site_checker import SiteChecker
-from typedefs import Manufacturer
-from utils import strip_url
+from .site_checker import SiteChecker
+from .utils import strip_url
 
 
 class SearchHandler(object):
