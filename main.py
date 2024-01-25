@@ -3,7 +3,9 @@
 from asyncio import sleep, gather, run
 from pathlib import Path
 
-from db_builders.omniclass import process_product, SAVE_PATH, OmniClass, parse_remaining
+from db_builders.omniclass import process_product, SAVE_PATH
+from db_builders.loading import parse_remaining
+from db_builders.typedefs import OmniClass
 
 CHUNK_SIZE = 3
 REMAINING_FN = Path('remaining.csv')
