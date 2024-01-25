@@ -1,23 +1,75 @@
 import asyncio
+import os
 from typing import List
 
-from googlesearch import search
+import aiohttp
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
-from db_builders.typedefs import Manufacturer
+from db_builders.typedefs import Manufacturer, SearchResultItem
 from .name_extractor import NameExtractor
 from .site_checker import SiteChecker
 from .utils import strip_url
+
+
+load_dotenv()
+
+BASE_URL = 'https://www.googleapis.com/customsearch/v1'
+API_KEY = os.getenv('GOOGLE_SEARCH_API_KEY')
+SEARCH_ENGINE_ID = os.getenv('GOOGLE_SEARCH_ENGINE_ID')
 
 
 class SearchHandler(object):
     """ Functor which conducts a search of manufacturers and returns the results which represent companies. """
     _site_checker: SiteChecker
     _name_extractor: NameExtractor
+    _session: aiohttp.ClientSession
 
     def __init__(self, llm: ChatOpenAI):
         self._site_checker = SiteChecker(llm)
         self._name_extractor = NameExtractor(llm)
+
+        # setup aiohttp session
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/120.0.0.0 Safari/537.36'
+        }
+        self._session = aiohttp.ClientSession(headers=headers)
+
+    async def perform_search(self, query: str, num_results: int = 100) -> list[SearchResultItem]:
+        """ Perform a search using the Google custom search API
+
+        Parameters:
+            `query`: The query string which will be used to search.
+            `num_results`: The number of results to return. Defaults to 100.
+
+        Returns:
+            A list of `SearchResultItem` objects.
+        """
+        results = []
+
+        pages = num_results // 10
+        for page in range(pages):
+            start = page * 10 + 1
+            # doc: https://developers.google.com/custom-search/v1/using_rest
+            url = f"{BASE_URL}?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&start={start}"
+            async with self._session.get(url) as resp:
+                data = await resp.json()
+                try:
+                    items = data['items']
+                    for item in items:
+                        results.append(
+                            SearchResultItem(
+                                title=item['title'],
+                                link=item['link'],
+                                mime=item['mime'],
+                                snippet=item['snippet']
+                            ))
+                except KeyError:
+                    # no results
+                    pass
+        return results
 
     async def __call__(self, omniclass_name: str, num_results: int = 1000) -> List[Manufacturer]:
         """ Conduct a search of manufacturers and return the results which represent companies.
@@ -28,20 +80,14 @@ class SearchHandler(object):
         Returns:
             List of manufacturers objects which offer the given omniclass_name
         """
-        # TODO: implement catching of 429 errors
 
         # get search results
         search_query = f"{omniclass_name} manufacturers"
 
-        results = []    # all search results
+        results = await self.perform_search(search_query, num_results)
         tasks = []      # tasks for verifying site
-        for result in search(search_query,
-                             sleep_interval=60,
-                             num_results=num_results,
-                             advanced=True,
-                             lang='en'):
-            results.append(result)
-            tasks.append(self._site_checker(result.title, result.url, result.description))
+        for result in results:
+            tasks.append(self._site_checker(result.title, result.link, result.snippet))
 
         print("Finished search. Awaiting validation of sites.")
 
