@@ -50,7 +50,6 @@ class NameExtractor(object):
                 response = await self._chain.ainvoke({'title': title, 'url': url, 'description': description})
                 break
             except RateLimitError:
-                print("Rate limit exceeded. Waiting 15 seconds.")
                 await asyncio.sleep(15)
 
         cleaned = self._clean_text(response)

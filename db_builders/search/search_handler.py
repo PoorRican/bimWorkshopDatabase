@@ -112,8 +112,6 @@ class SearchHandler(object):
         for result in results:
             tasks.append(self._site_checker(result.title, result.link, result.snippet))
 
-        print("Finished search. Awaiting validation of sites.")
-
         # join all tasks into a tuple of bool values
         valid_sites = await asyncio.gather(*tasks)
 
@@ -135,7 +133,5 @@ class SearchHandler(object):
 
         # deduplicate manufacturers
         manufacturers = self._deduplicate_manufacturers(manufacturers)
-
-        print(f"Found valid {len(manufacturers)} manufacturer sites!")
 
         return manufacturers
