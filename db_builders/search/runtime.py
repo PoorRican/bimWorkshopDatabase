@@ -22,7 +22,7 @@ async def _search_for_manufacturers(omniclass: OmniClass,
         `handler`: The `SearchHandler` to use for searching.
         `num_results`: The number of results to search for. Defaults to 1000.
     """
-    print(f"Getting manufacturers for {omniclass.number} {omniclass.name}")
+    print(f"Getting manufacturers for {omniclass}")
     results = await handler(omniclass.name, num_results)
     _save_manufacturers(omniclass, results)
 
@@ -38,7 +38,7 @@ def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer])
         `manufacturers`: The list of manufacturers to save.
     """
     # save manufacturers to CSV
-    save_path = MANUFACTURER_SAVE_PATH.joinpath(f"{omniclass.number} {omniclass.name}.csv")
+    save_path = MANUFACTURER_SAVE_PATH.joinpath(f"{omniclass}.csv")
     with open(save_path, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(['company name', 'url'])

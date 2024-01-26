@@ -22,6 +22,9 @@ class OmniClass:
     number: str
     name: str
 
+    def __str__(self):
+        return f"{self.number} {self.name}"
+
 
 @dataclass
 class SearchResultItem:
