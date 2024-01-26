@@ -17,6 +17,12 @@ BASE_URL = 'https://www.googleapis.com/customsearch/v1'
 API_KEY = os.getenv('GOOGLE_SEARCH_API_KEY')
 SEARCH_ENGINE_ID = os.getenv('GOOGLE_SEARCH_ENGINE_ID')
 
+# check that environment variables are properly set
+if API_KEY is None:
+    raise ValueError("GOOGLE_SEARCH_API_KEY is not set!")
+if SEARCH_ENGINE_ID is None:
+    raise ValueError("GOOGLE_SEARCH_ENGINE_ID is not set!")
+
 
 class SearchHandler(object):
     """ Functor which conducts a search of manufacturers and returns the results which represent companies. """
