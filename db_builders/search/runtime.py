@@ -38,7 +38,7 @@ def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer])
         `manufacturers`: The list of manufacturers to save.
     """
     # save manufacturers to CSV
-    save_path = MANUFACTURER_SAVE_PATH.joinpath(f"{omniclass}.csv")
+    save_path = MANUFACTURER_SAVE_PATH.joinpath(f"{omniclass} manufacturers.csv")
     with open(save_path, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(['company name', 'url'])
