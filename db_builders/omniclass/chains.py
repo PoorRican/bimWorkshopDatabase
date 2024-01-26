@@ -5,15 +5,15 @@ from langchain_core.prompts import PromptTemplate, HumanMessagePromptTemplate, C
 from langchain_core.runnables import Runnable
 from langchain_openai import ChatOpenAI
 
-_ROOT = Path(__file__).parent.parent.parent
+_ROOT = Path(__file__).parent
 
-PARAMETER_PROMPT_FILE = _ROOT.joinpath("PARAMETER_PROMPT.txt")
+PARAMETER_PROMPT_FILE = _ROOT.joinpath("prompts", "PARAMETER_PROMPT.txt")
 
 PARAMETER_PROMPT = HumanMessagePromptTemplate.from_template(
     open(PARAMETER_PROMPT_FILE, "r").read()
 )
 
-VALUE_PROMPT_FILE = _ROOT.joinpath("VALUE_PROMPT.txt")
+VALUE_PROMPT_FILE = _ROOT.joinpath("prompts", "VALUE_PROMPT.txt")
 
 VALUE_PROMPT = HumanMessagePromptTemplate.from_template(
     open(VALUE_PROMPT_FILE, "r").read()

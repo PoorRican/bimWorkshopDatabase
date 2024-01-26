@@ -3,10 +3,16 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "db_builder"
+name = "db_builders"
 version = "0.0.1"
 dependencies = [
     "langchain",
+    "langchain_openai",
+    "aiohttp",
     'python-dotenv',
     'openai',
 ]
+
+[tool.setuptools]
+packages = ["db_builders", "db_builders.omniclass", "db_builders.search"]
+include-package-data = true

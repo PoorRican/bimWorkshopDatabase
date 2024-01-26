@@ -1,0 +1,2 @@
+include db_builders/omniclass/PARAMETER_PROMPT.txt
+include db_builders/omniclass/VALUE_PROMPT.txt
