@@ -75,6 +75,25 @@ class SearchHandler(object):
                     pass
         return results
 
+    @staticmethod
+    def _deduplicate_manufacturers(results: list[Manufacturer]) -> list[Manufacturer]:
+        """ Deduplicate manufacturers based on URL
+
+        Parameters:
+            results: List of manufacturers to deduplicate
+
+        Returns:
+            List of manufacturers with duplicates removed
+        """
+        urls = []
+        deduplicated_results = []
+        for result in results:
+            if result.url not in urls:
+                urls.append(result.url)
+                deduplicated_results.append(result)
+
+        return deduplicated_results
+
     async def __call__(self, omniclass_name: str, num_results: int = 1000) -> List[Manufacturer]:
         """ Conduct a search of manufacturers and return the results which represent companies.
 
@@ -113,6 +132,9 @@ class SearchHandler(object):
         for name, url in zip(manufacturer_names, urls):
             stripped_url = strip_url(url)
             manufacturers.append(Manufacturer(name, stripped_url))
+
+        # deduplicate manufacturers
+        manufacturers = self._deduplicate_manufacturers(manufacturers)
 
         print(f"Found valid {len(manufacturers)} manufacturer sites!")
 
