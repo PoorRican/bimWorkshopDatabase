@@ -70,3 +70,8 @@ async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
         for omniclass in batch:
             tasks.append(_search_for_manufacturers(omniclass, handler))
         await asyncio.gather(*tasks)
+
+    # print the number of products that were processed
+    print(f"\nProcessed {len(omniclasses)} products.")
+    print("Done!")
+    exit(0)

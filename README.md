@@ -19,7 +19,7 @@ Open up the downloaded file, and follow the instructions to install Python 3.
 
 This program requires a few extra Python packages to run. A setup file has been provided.
 
-Open up the program folder, and right click "setup.py". Select "Open With" and choose "Python Launcher (3.12)".
+Open up the program folder, and right click "install_dependencies.py". Select "Open With" and choose "Python Launcher (3.12)".
 
 You will see a terminal window open up and begin to install the necessary packages. Once the terminal window says something
 like "Successfully installed", you can close the terminal window.
@@ -57,25 +57,24 @@ when you're satisfied with the results.
 
 ## Actually Running the Program
 
+
 Once Python is installed, the required packages are installed, and the OpenAI API key set up, you can run the program.
 
 Open up the program folder, and right click "main.py". Select "Open With" and choose "Python Launcher (3.12)".
 A terminal window will open up and begin to run the program. It will print how many omniclass files have been read
 from the "remaining.csv" file.
 
-There will be some feedback generated in the terminal window, such as "Did not get 20 parameters for omniclass..." or
-"Did not get 20 values for parameter...". This is normal, and is just the program letting you know that ChatGPT
-generate a full 20 parameters for that omniclass. The program will continue to retry until ChatGPT generates proper data.
+The program contains two main modes: one for generating tables of omniclass parameter-values, another for searching
+for manufacturers. The program will ask you which mode you want to run. Enter "1" for the parameter-value mode, or
+"2" for the manufacturer search mode.
 
-The average runtime for the program is about 1 minute per omniclass.
-
-Once the terminal window says "Done!", you can close the terminal window.
+For either mode, once the terminal window says "Done!", you can close the terminal window.
 
 Be sure to move the generated CSV files from the "data" folder, and delete the "remaining.csv" file. Running the program
-is costly in terms of API calls, so it is best to run the program once and not to run the same list of omniclasses again
+is costly in terms of using ChatGPT calls, so it is best to run the program once and not to run the same list of omniclasses again
 unless you have to.
 
-# Editing Prompts
+# Editing Prompts for Parameter-Value Mode
 
 The prompts used to generate the parameters are "PARAMETER_PROMPT.txt" and "VALUE_PROMPT.txt". These files are located
 in the top-level. You can edit these files to change the prompts used to generate the parameters.
