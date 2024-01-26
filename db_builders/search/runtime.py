@@ -2,8 +2,7 @@ import asyncio
 import csv
 from pathlib import Path
 
-from langchain_openai import ChatOpenAI
-
+from db_builders.llm import GPT3_LOW_T
 from db_builders.search.search_handler import SearchHandler
 from db_builders.typedefs import Manufacturer, OmniClass
 
@@ -29,14 +28,14 @@ def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer])
             writer.writerow([manufacturer.title, manufacturer.url])
 
 
-async def manufacturer_search_runtime(omniclasses: list[OmniClass], llm: ChatOpenAI):
+async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
     """ Find all manufacturers and save the data to a CSV file.
 
     Parameters:
         `omniclasses`: The list of omniclasses to search for.
         `llm`: The LLM instance to use for checking search results.
     """
-    handler = SearchHandler(llm)
+    handler = SearchHandler(GPT3_LOW_T)
 
     batch_size = 5
     for i in range(0, len(omniclasses), batch_size):
