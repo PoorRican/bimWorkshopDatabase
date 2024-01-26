@@ -76,8 +76,10 @@ unless you have to.
 
 # Editing Prompts for Parameter-Value Mode
 
+_**Update 2024-01-25**: The prompts have been moved. They can now be found in "db_builders/omniclass/prompts"._
+
 The prompts used to generate the parameters are "PARAMETER_PROMPT.txt" and "VALUE_PROMPT.txt". These files are located
-in the top-level. You can edit these files to change the prompts used to generate the parameters.
+in "db_builders/omniclass/prompts". You can edit these files to change the prompts used to generate the parameters.
 
 The parameter prompt *needs* to have the `{omniclass}` placeholder in it. This is where the product/omniclass name will
 be inserted.
