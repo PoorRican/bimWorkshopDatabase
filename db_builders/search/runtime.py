@@ -56,8 +56,13 @@ async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
         `omniclasses`: The list of omniclasses to search for.
         `llm`: The LLM instance to use for checking search results.
     """
+    # create directory if it does not exist
+    MANUFACTURER_SAVE_PATH.mkdir(parents=True, exist_ok=True)
+
+    # initialize search handler
     handler = SearchHandler(GPT3_LOW_T)
 
+    # begin to search for manufacturers in batches of CHUNK_SIZE
     batch_size = 5
     for i in range(0, len(omniclasses), batch_size):
         batch = omniclasses[i:i + batch_size]

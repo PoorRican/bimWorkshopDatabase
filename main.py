@@ -42,13 +42,6 @@ def get_mode() -> str:
             print(f"\n{RED}Invalid mode. Please try again.{RESET}\n")
 
 
-def create_data_directory(path: Path):
-    """ Create the data directory if it does not exist. """
-    if not path.is_dir():
-        path.mkdir()
-        print(f"Created directory: {path}")
-
-
 if __name__ == '__main__':
     # clear terminal window
     print(CLEAR)
@@ -75,9 +68,6 @@ if __name__ == '__main__':
         print("This process may take a while...")
         print(f"{RED}Press Ctrl+C to cancel at any time.{RESET}\n")
 
-        # create the data directory if it does not exist
-        create_data_directory(OMNICLASS_SAVE_PATH)
-
         run(generate_omniclass_tables(OMNICLASS_LIST))
 
     # search for manufacturers
@@ -88,8 +78,5 @@ if __name__ == '__main__':
         print(f"Manufacturer data will be saved to: {LIGHT_BLUE}{MANUFACTURER_SAVE_PATH}{RESET}")
         print("This process may take a while...")
         print(f"{RED}Press Ctrl+C to cancel at any time.{RESET}\n")
-
-        # create the data directory if it does not exist
-        create_data_directory(MANUFACTURER_SAVE_PATH)
 
         run(manufacturer_search_runtime(OMNICLASS_LIST))

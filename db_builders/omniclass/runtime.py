@@ -36,6 +36,9 @@ async def generate_omniclass_tables(omniclasses: list[OmniClass]):
     Parameters:
         `omniclasses`: The list of omniclasses to generate tables for
     """
+    # create directory if it does not exist
+    OMNICLASS_SAVE_PATH.mkdir(parents=True, exist_ok=True)
+
     # give some feedback on how many products are being processed
     print(f"Processing {len(omniclasses)} products...")
 
