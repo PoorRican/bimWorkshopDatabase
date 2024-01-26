@@ -7,10 +7,9 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
 from db_builders.typedefs import Manufacturer, SearchResultItem
+from db_builders.utils import strip_url
 from .name_extractor import NameExtractor
 from .site_checker import SiteChecker
-from .utils import strip_url
-
 
 load_dotenv()
 
