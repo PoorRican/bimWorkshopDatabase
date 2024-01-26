@@ -28,5 +28,4 @@ class SearchResultItem:
     """ This is used to parse the results from the Google custom search API """
     title: str
     link: str
-    mime: str
     snippet: str

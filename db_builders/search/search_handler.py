@@ -68,7 +68,6 @@ class SearchHandler(object):
                             SearchResultItem(
                                 title=item['title'],
                                 link=item['link'],
-                                mime=item['mime'],
                                 snippet=item['snippet']
                             ))
                 except KeyError:
