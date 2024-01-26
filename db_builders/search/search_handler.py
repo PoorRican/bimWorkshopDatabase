@@ -104,8 +104,8 @@ class SearchHandler(object):
         name_tasks = []
         for result, is_manufacturer in zip(results, valid_sites):
             if is_manufacturer:
-                name_tasks.append(self._name_extractor(result.title, result.url, result.description))
-                urls.append(result.url)
+                name_tasks.append(self._name_extractor(result.title, result.link, result.snippet))
+                urls.append(result.link)
 
         manufacturer_names = await asyncio.gather(*name_tasks)
 
