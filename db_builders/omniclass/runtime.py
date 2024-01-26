@@ -10,6 +10,15 @@ OMNICLASS_SAVE_PATH = Path('data/omniclass_tables')
 
 
 async def _process_product(omniclass: OmniClass):
+    """ Begin to process a single omniclass product.
+
+    This is used as a coroutine in `generate_omniclass_tables` to execute in parallel.
+
+    Data is saved to a CSV file in the `data/omniclass_tables` directory.
+
+    Parameters:
+        `omniclass`: A single omniclass to process.
+    """
     omniclass_name = omniclass.name
     print(f"\n*** Processing {omniclass_name}...")
     ai_message, parameters = await generate_parameters(omniclass_name)
@@ -19,6 +28,14 @@ async def _process_product(omniclass: OmniClass):
 
 
 async def generate_omniclass_tables(omniclasses: list[OmniClass]):
+    """ Generate omniclass tables for a given list of omniclass objects.
+
+    This is the main entry point for the omniclass table generation runtime and should be the only function
+    called in `main.py`.
+
+    Parameters:
+        `omniclasses`: The list of omniclasses to generate tables for
+    """
     # give some feedback on how many products are being processed
     print(f"Processing {len(omniclasses)} products...")
 
