@@ -8,7 +8,7 @@ from db_builders.search.search_handler import SearchHandler
 from db_builders.typedefs import Manufacturer, OmniClass
 
 
-_SAVE_PATH = Path('data/manufacturers')
+MANUFACTURER_SAVE_PATH = Path('data/manufacturers')
 
 
 async def _search_for_manufacturers(omniclass: OmniClass,
@@ -21,7 +21,7 @@ async def _search_for_manufacturers(omniclass: OmniClass,
 
 def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer]):
     # save manufacturers to CSV
-    save_path = _SAVE_PATH.joinpath(f"{omniclass.number} {omniclass.name}.csv")
+    save_path = MANUFACTURER_SAVE_PATH.joinpath(f"{omniclass.number} {omniclass.name}.csv")
     with open(save_path, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(['company name', 'url'])

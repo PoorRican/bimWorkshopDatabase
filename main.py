@@ -1,41 +1,20 @@
 #!/usr/bin/python3
 
-from asyncio import sleep, gather, run
+from asyncio import run
 from pathlib import Path
 
-from db_builders.omniclass import process_product, SAVE_PATH
+from db_builders.omniclass.runtime import generate_omniclass_tables, OMNICLASS_SAVE_PATH
 from db_builders.loading import parse_remaining
-from db_builders.typedefs import OmniClass
 
 CHUNK_SIZE = 3
 REMAINING_FN = Path('remaining.csv')
 
 
-async def run_all(omniclasses: list[OmniClass]):
-    # give some feedback on how many products are being processed
-    print(f"Processing {len(OMNICLASS_LIST)} products...")
-
-    # wait 5 seconds before starting
-    print("Processing will start in 5 seconds... (press Ctrl+C to cancel at any time)")
-    await sleep(5)
-
-    # chunk products into groups of CHUNK_SIZE
-    chunks = [omniclasses[i:i + CHUNK_SIZE] for i in range(0, len(omniclasses), CHUNK_SIZE)]
-    for chunk in chunks:
-        tasks = [process_product(product_name) for product_name in chunk]
-        await gather(*tasks)
-
-    # print the number of products that were processed
-    print(f"\nProcessed {len(omniclasses)} products.")
-    print("Done!")
-    exit(0)
-
-
 def create_data_directory():
     """ Create the data directory if it does not exist. """
-    if not SAVE_PATH.is_dir():
-        SAVE_PATH.mkdir()
-        print(f"Created directory: {SAVE_PATH}")
+    if not OMNICLASS_SAVE_PATH.is_dir():
+        OMNICLASS_SAVE_PATH.mkdir()
+        print(f"Created directory: {OMNICLASS_SAVE_PATH}")
 
 
 if __name__ == '__main__':
@@ -49,7 +28,7 @@ if __name__ == '__main__':
     try:
         OMNICLASS_LIST = parse_remaining(REMAINING_FN)
 
-        run(run_all(OMNICLASS_LIST))
+        run(generate_omniclass_tables(OMNICLASS_LIST))
     except FileNotFoundError:
         print(f"Could not find file: {REMAINING_FN}")
         exit(1)

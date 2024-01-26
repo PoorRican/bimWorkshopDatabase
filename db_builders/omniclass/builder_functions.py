@@ -15,8 +15,6 @@ from db_builders.typedefs import OmniClass, Parameter
 
 load_dotenv()
 
-SAVE_PATH = Path('data/omniclass_tables')
-
 GPT3_LOW_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.3)
 GPT3_HIGH_T = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.9)
 
@@ -121,12 +119,3 @@ def save_product(path: Path, omniclass: OmniClass, kv_columns: Dict[str, List[st
         # write values
         for i in range(len(kv_columns.keys())):
             writer.writerow([kv_columns[k][i] for k in kv_columns.keys()])
-
-
-async def process_product(omniclass: OmniClass):
-    omniclass_name = omniclass.name
-    print(f"\n*** Processing {omniclass_name}...")
-    ai_message, parameters = await generate_parameters(omniclass_name)
-    kv_columns = await generate_all_values(omniclass_name, parameters, ai_message)
-    save_product(SAVE_PATH, omniclass, kv_columns)
-    print(f"\n*** ...Done processing {omniclass_name}. ***\n")
