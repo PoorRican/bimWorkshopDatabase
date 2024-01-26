@@ -1,11 +1,11 @@
 from asyncio import sleep, gather
 from pathlib import Path
 
-from db_builders.omniclass import generate_parameters, generate_all_values, save_product
+from db_builders.omniclass.builder_functions import generate_parameters, generate_all_values, save_product
 from db_builders.typedefs import OmniClass
-from main import OMNICLASS_LIST, CHUNK_SIZE
 
 
+CHUNK_SIZE = 3
 OMNICLASS_SAVE_PATH = Path('data/omniclass_tables')
 
 
@@ -20,7 +20,7 @@ async def _process_product(omniclass: OmniClass):
 
 async def generate_omniclass_tables(omniclasses: list[OmniClass]):
     # give some feedback on how many products are being processed
-    print(f"Processing {len(OMNICLASS_LIST)} products...")
+    print(f"Processing {len(omniclasses)} products...")
 
     # wait 5 seconds before starting
     print("Processing will start in 5 seconds... (press Ctrl+C to cancel at any time)")
