@@ -2,11 +2,11 @@ import asyncio
 import functools
 from urllib.parse import urlparse
 
-from openai import RateLimitError
+from openai import RateLimitError, InternalServerError, APIConnectionError, APITimeoutError, APIResponseValidationError
 
 
 def retry_on_ratelimit():
-    """ Decorator which retries an asynchronous OpenAI call if a RateLimitError is raised. """
+    """ Decorator which retries an asynchronous OpenAI call if a RateLimitError or any other openai error is raised. """
     def decorator(func):
         @functools.wraps(func)
         async def wrapped(*args, **kwargs):
@@ -15,6 +15,8 @@ def retry_on_ratelimit():
                     result = await func(*args, **kwargs)
                 except RateLimitError:
                     await asyncio.sleep(15)
+                except (InternalServerError, APIConnectionError, APITimeoutError, APIResponseValidationError):
+                    pass
                 except Exception as e:
                     raise e from None
                 else:
