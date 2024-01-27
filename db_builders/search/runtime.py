@@ -12,7 +12,7 @@ MANUFACTURER_SAVE_PATH = Path('data/manufacturers')
 
 async def _search_for_manufacturers(omniclass: OmniClass,
                                     handler: SearchHandler,
-                                    num_results: int = 1000):
+                                    num_results: int = 200):
     """ Search for manufacturers for a given omniclass.
 
     This is used as a coroutine in `manufacturer_search_runtime` to execute in parallel.
@@ -68,7 +68,7 @@ async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
         batch = omniclasses[i:i + batch_size]
         tasks = []
         for omniclass in batch:
-            tasks.append(_search_for_manufacturers(omniclass, handler))
+            tasks.append(_search_for_manufacturers(omniclass, handler, 200))
         await asyncio.gather(*tasks)
 
     # print the number of products that were processed
