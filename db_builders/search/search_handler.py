@@ -108,6 +108,12 @@ class SearchHandler(object):
         search_query = f"{omniclass_name} manufacturers"
 
         results = await self.perform_search(search_query, num_results)
+
+        # perform a keyword filter to remove irrelevant results
+        exclude = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay']
+        results = [result for result in results if not any(word in result.link for word in exclude)]
+
+        # check if each site is a manufacturer
         tasks = []      # tasks for verifying site
         for result in results:
             tasks.append(self._site_checker(result.title, result.link, result.snippet))
