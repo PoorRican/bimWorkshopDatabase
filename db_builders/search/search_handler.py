@@ -1,79 +1,28 @@
 import asyncio
-import os
 from typing import List
 
-import aiohttp
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
-from db_builders.typedefs import Manufacturer, SearchResultItem
+from db_builders.typedefs import Manufacturer
 from db_builders.utils import strip_url
+from .base_search import BaseSearchHandler
+from .manufacturer_checker import SiteDoubleChecker
 from .name_extractor import NameExtractor
 from .site_checker import SiteChecker
 
-load_dotenv()
 
-BASE_URL = 'https://www.googleapis.com/customsearch/v1'
-API_KEY = os.getenv('GOOGLE_SEARCH_API_KEY')
-SEARCH_ENGINE_ID = os.getenv('GOOGLE_SEARCH_ENGINE_ID')
-
-# check that environment variables are properly set
-if API_KEY is None:
-    raise ValueError("GOOGLE_SEARCH_API_KEY is not set!")
-if SEARCH_ENGINE_ID is None:
-    raise ValueError("GOOGLE_SEARCH_ENGINE_ID is not set!")
-
-
-class SearchHandler(object):
+class SearchHandler(BaseSearchHandler):
     """ Functor which conducts a search of manufacturers and returns the results which represent companies. """
     _site_checker: SiteChecker
     _name_extractor: NameExtractor
-    _session: aiohttp.ClientSession
+    _site_verifier: SiteDoubleChecker
 
     def __init__(self, llm: ChatOpenAI):
+        super().__init__()
+
         self._site_checker = SiteChecker(llm)
         self._name_extractor = NameExtractor(llm)
-
-        # setup aiohttp session
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/120.0.0.0 Safari/537.36'
-        }
-        self._session = aiohttp.ClientSession(headers=headers)
-
-    async def perform_search(self, query: str, num_results: int = 100) -> list[SearchResultItem]:
-        """ Perform a search using the Google custom search API
-
-        Parameters:
-            `query`: The query string which will be used to search.
-            `num_results`: The number of results to return. Defaults to 100.
-
-        Returns:
-            A list of `SearchResultItem` objects.
-        """
-        results = []
-
-        pages = num_results // 10
-        for page in range(pages):
-            start = page * 10 + 1
-            # doc: https://developers.google.com/custom-search/v1/using_rest
-            url = f"{BASE_URL}?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&start={start}"
-            async with self._session.get(url) as resp:
-                data = await resp.json()
-                try:
-                    items = data['items']
-                    for item in items:
-                        results.append(
-                            SearchResultItem(
-                                title=item['title'],
-                                link=item['link'],
-                                snippet=item['snippet']
-                            ))
-                except KeyError:
-                    # no results
-                    pass
-        return results
+        self._site_verifier = SiteDoubleChecker(llm)
 
     @staticmethod
     def _deduplicate_manufacturers(results: list[Manufacturer]) -> list[Manufacturer]:
@@ -139,5 +88,13 @@ class SearchHandler(object):
 
         # deduplicate manufacturers
         manufacturers = self._deduplicate_manufacturers(manufacturers)
+
+        # double check that manufacturers are valid
+        tasks = []
+        for manufacturer in manufacturers:
+            tasks.append(self._site_verifier(manufacturer.url))
+
+        valid_manufacturers = await asyncio.gather(*tasks)
+        manufacturers = [manufacturer for manufacturer, is_valid in zip(manufacturers, valid_manufacturers) if is_valid]
 
         return manufacturers
