@@ -72,7 +72,7 @@ class SiteDoubleChecker(BaseSearchHandler):
         Returns:
             True if site is a manufacturer site, False otherwise
         """
-        query = f"site:{site}"
+        query = f"what is {site} site:{site}"
         results = await self.perform_search(query, num_results=5)
 
         # format search results
