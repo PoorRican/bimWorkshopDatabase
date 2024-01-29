@@ -59,7 +59,9 @@ class SearchHandler(BaseSearchHandler):
         results = await self.perform_search(search_query, num_results)
 
         # perform a keyword filter to remove irrelevant results
-        exclude = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay']
+        exclude = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowes', 'homedepot', 'walmart',
+                   'target.com', '.gov', 'acehardware', 'business', 'news', 'alibaba', 'aliexpress', 'wikipedia',
+                   'youtube', 'facebook', 'twitter', 'instagram', 'pinterest', 'linkedin', 'yelp', 'bbb', 'glassdoor']
         results = [result for result in results if not any(word in result.link for word in exclude)]
 
         # check if each site is a manufacturer
