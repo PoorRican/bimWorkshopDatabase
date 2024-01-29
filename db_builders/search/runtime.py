@@ -12,7 +12,7 @@ MANUFACTURER_SAVE_PATH = Path('data/manufacturers')
 
 async def _search_for_manufacturers(omniclass: OmniClass,
                                     handler: SearchHandler,
-                                    num_results: int = 200):
+                                    num_results: int = 100):
     """ Search for manufacturers for a given omniclass.
 
     This is used as a coroutine in `manufacturer_search_runtime` to execute in parallel.
@@ -63,7 +63,7 @@ async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
     handler = SearchHandler(GPT3_LOW_T)
 
     # begin to search for manufacturers in batches of CHUNK_SIZE
-    batch_size = 5
+    batch_size = 1
     for i in range(0, len(omniclasses), batch_size):
         batch = omniclasses[i:i + batch_size]
         tasks = []
