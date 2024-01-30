@@ -62,14 +62,9 @@ async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
     # initialize search handler
     handler = SearchHandler(GPT3_LOW_T)
 
-    # begin to search for manufacturers in batches of CHUNK_SIZE
-    batch_size = 1
-    for i in range(0, len(omniclasses), batch_size):
-        batch = omniclasses[i:i + batch_size]
-        tasks = []
-        for omniclass in batch:
-            tasks.append(_search_for_manufacturers(omniclass, handler, 200))
-        await asyncio.gather(*tasks)
+    # begin to search for manufacturers
+    for omniclass in omniclasses:
+        await _search_for_manufacturers(omniclass, handler, 200)
 
     # print the number of products that were processed
     print(f"\nProcessed {len(omniclasses)} products.")
