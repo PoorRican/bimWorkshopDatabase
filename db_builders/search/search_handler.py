@@ -78,13 +78,13 @@ class SearchHandler(BaseSearchHandler):
         valid_sites = []
         batch_size = 5
         for i in range(0, len(results), batch_size):
-            print(f"  - Checking batch {i // batch_size + 1} of {len(results) // batch_size}")
+            print(f"  - Checking batch {i // batch_size + 1} of {len(results) // batch_size + 1}")
             tasks = []
             for result in results[i:i + batch_size]:
                 tasks.append(self._site_checker(result.title, result.link, result.snippet))
             valid_sites.extend(await asyncio.gather(*tasks))
 
-        print("  \u2514 Done!")
+        print("  - Done!")
 
         # filter out non-manufacturer sites and extract names
         print("\u2514 Extracting names from manufacturer sites... ")
