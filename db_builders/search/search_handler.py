@@ -72,16 +72,19 @@ class SearchHandler(BaseSearchHandler):
 
         print(f"  - Filtered results down to {len(results)}")
 
-        # check if each site is a manufacturer
-        print("  \u2514 Checking if each site is a manufacturer... ", end="")
-        tasks = []      # tasks for verifying site
-        for result in results:
-            tasks.append(self._site_checker(result.title, result.link, result.snippet))
+        # check if each site is a manufacturer in batches of 10
+        print("\u2514 Checking if each site is a manufacturer... ")
 
-        # join all tasks into a tuple of bool values
-        valid_sites = await asyncio.gather(*tasks)
+        valid_sites = []
+        batch_size = 5
+        for i in range(0, len(results), batch_size):
+            print(f"  - Checking batch {i // batch_size + 1} of {len(results) // batch_size}")
+            tasks = []
+            for result in results[i:i + batch_size]:
+                tasks.append(self._site_checker(result.title, result.link, result.snippet))
+            valid_sites.extend(await asyncio.gather(*tasks))
 
-        print("Done!")
+        print("  \u2514 Done!")
 
         # filter out non-manufacturer sites and extract names
         print("\u2514 Extracting names from manufacturer sites... ")
