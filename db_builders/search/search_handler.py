@@ -56,8 +56,10 @@ class SearchHandler(BaseSearchHandler):
         # get search results
         search_query = f"{omniclass_name} manufacturers"
 
-        print("  \u2514 Performing search... ", end='')
+        print("\u2514 Performing search... ")
         results = await self.perform_search(search_query, num_results)
+
+        print(f"  - Got {len(results)} results.")
 
         # perform a keyword filter to remove irrelevant results
         exclude = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowes', 'homedepot', 'walmart',
@@ -68,7 +70,7 @@ class SearchHandler(BaseSearchHandler):
                    'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr',]
         results = [result for result in results if not any(word in result.link for word in exclude)]
 
-        print("Got and filtered results")
+        print(f"  - Filtered results down to {len(results)}")
 
         # check if each site is a manufacturer
         print("  \u2514 Checking if each site is a manufacturer... ", end="")
@@ -82,7 +84,7 @@ class SearchHandler(BaseSearchHandler):
         print("Done!")
 
         # filter out non-manufacturer sites and extract names
-        print("  \u2514 Extracting names from manufacturer sites... ", end="")
+        print("\u2514 Extracting names from manufacturer sites... ")
 
         urls = []
         name_tasks = []
@@ -93,10 +95,10 @@ class SearchHandler(BaseSearchHandler):
 
         manufacturer_names = await asyncio.gather(*name_tasks)
 
-        print("Done!")
+        print("  \u2514 Done!")
 
         # create manufacturer objects
-        print("  \u2514 Creating manufacturer objects and deduplicating results... ", end="")
+        print("\u2514 Creating manufacturer objects and deduplicating results... ")
 
         manufacturers = []
         for name, url in zip(manufacturer_names, urls):
@@ -106,20 +108,20 @@ class SearchHandler(BaseSearchHandler):
         # deduplicate manufacturers
         manufacturers = self._deduplicate_manufacturers(manufacturers)
 
-        print("Done")
+        print("  \u2514 Done")
 
         # double check that manufacturers are valid
-        print("  \u2514 Double checking manufacturers... ", end="")
+        print("\u2514 Double checking manufacturers... ")
         tasks = []
         for manufacturer in manufacturers:
             tasks.append(self._site_verifier(manufacturer.url))
 
         valid_manufacturers = await asyncio.gather(*tasks)
 
-        print("Validated sites!")
+        print("  \u2514 Validated sites!")
 
         manufacturers = [manufacturer for manufacturer, is_valid in zip(manufacturers, valid_manufacturers) if is_valid]
 
-        print("  \u2514 Returning manufacturers.")
+        print("\u2514 Returning manufacturers.")
 
         return manufacturers
