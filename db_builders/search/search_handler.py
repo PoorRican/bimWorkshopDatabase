@@ -76,7 +76,7 @@ class SearchHandler(BaseSearchHandler):
         print("\u2514 Checking if each site is a manufacturer... ")
 
         valid_sites = []
-        batch_size = 5
+        batch_size = 10
         for i in range(0, len(results), batch_size):
             print(f"  - Checking batch {i // batch_size + 1} of {len(results) // batch_size + 1}")
             tasks = []
