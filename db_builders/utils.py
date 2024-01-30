@@ -14,7 +14,7 @@ def retry_on_ratelimit():
                 try:
                     result = await func(*args, **kwargs)
                 except RateLimitError:
-                    await asyncio.sleep(30)
+                    await asyncio.sleep(10)
                 except (InternalServerError, APIConnectionError, APITimeoutError, APIResponseValidationError) as e:
                     print(e)
                     pass
