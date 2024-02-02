@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import List
 
 from langchain_openai import ChatOpenAI
@@ -53,6 +54,8 @@ class SearchHandler(BaseSearchHandler):
             List of manufacturers objects which offer the given omniclass_name
         """
 
+        print(f"\u2514 Began process at {datetime.now().strftime('%H:%M:%S')}")
+
         # get search results
         search_query = f"{omniclass_name} manufacturers"
 
@@ -73,7 +76,7 @@ class SearchHandler(BaseSearchHandler):
         print(f"  - Filtered results down to {len(results)}")
 
         # check if each site is a manufacturer in batches of 10
-        print("\u2514 Checking if each site is a manufacturer... ")
+        print("\u2514 Checking which results are manufacturer sites... ")
 
         valid_sites = []
         batch_size = 10
@@ -87,7 +90,7 @@ class SearchHandler(BaseSearchHandler):
         print("  - Done!")
 
         # filter out non-manufacturer sites and extract names
-        print("\u2514 Extracting names from manufacturer sites... ")
+        print("\u2514 Creating Manufacturer objects... ")
 
         urls = []
         name_tasks = []
@@ -96,12 +99,12 @@ class SearchHandler(BaseSearchHandler):
                 name_tasks.append(self._name_extractor(result.title, result.link, result.snippet))
                 urls.append(result.link)
 
+        print(f"  - Awaiting {len(name_tasks)} name tasks... ")
+
         manufacturer_names = await asyncio.gather(*name_tasks)
 
-        print("  \u2514 Done!")
-
         # create manufacturer objects
-        print("\u2514 Creating manufacturer objects and deduplicating results... ")
+        print("  - Creating manufacturer objects and deduplicating results... ")
 
         manufacturers = []
         for name, url in zip(manufacturer_names, urls):
@@ -111,7 +114,7 @@ class SearchHandler(BaseSearchHandler):
         # deduplicate manufacturers
         manufacturers = self._deduplicate_manufacturers(manufacturers)
 
-        print("  \u2514 Done")
+        print("  - Done")
 
         # double check that manufacturers are valid
         print("\u2514 Double checking manufacturers... ")
@@ -121,10 +124,10 @@ class SearchHandler(BaseSearchHandler):
 
         valid_manufacturers = await asyncio.gather(*tasks)
 
-        print("  \u2514 Validated sites!")
+        print("  - Validated sites!")
 
         manufacturers = [manufacturer for manufacturer, is_valid in zip(manufacturers, valid_manufacturers) if is_valid]
 
-        print("\u2514 Returning manufacturers.")
+        print(f"\u2514 Returning {len(manufacturers)} manufacturers.\n")
 
         return manufacturers

@@ -45,6 +45,8 @@ def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer])
         for manufacturer in manufacturers:
             writer.writerow([manufacturer.title, manufacturer.url])
 
+    print(f"\u2514 Saved CSV file.\n")
+
 
 async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
     """ Find all manufacturers and save the data to a CSV file.
