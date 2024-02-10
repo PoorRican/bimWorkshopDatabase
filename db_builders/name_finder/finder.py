@@ -11,7 +11,7 @@ from db_builders.utils import retry_on_ratelimit
 _WEBSITE_CHECKER_PROMPT = PromptTemplate.from_template(
     """You will be given a list of search results for a manufacturer company named {manufacturer}.
     
-Your job is to determine which site is the website for {manufacturer}.
+Your job is to determine which URL is the product page for the {manufacturer} website.
 
 Search Results:
 {search_results}
@@ -20,7 +20,7 @@ Return the URL of the {manufacturer}'s website.""")
 
 
 class WebsiteFinder(BaseSearchHandler):
-    """ Functor which accepts a list of manufacturer names then searches each name for the manufacturer's website """
+    """ Functor which accepts a manufacturer name then find the products page for the manufacturer website. """
     _chain: Runnable
 
     def __init__(self, llm: ChatOpenAI):
@@ -79,23 +79,17 @@ class WebsiteFinder(BaseSearchHandler):
         Returns:
             Manufacturer website URL
         """
-        query = f"{name} manufacturer website"
-        results = await self.perform_search(query, 10)
 
-        return await self._determine_url(results, name)
-
-    async def __call__(self, manufacturer_names: list[str]) -> list[str]:
-        """ Accept a list of manufacturer names then search each name for the manufacturer's website.
+    async def __call__(self, manufacturer_name: str) -> str:
+        """ Accept a manufacturer name then search for the products page for the manufacturer's website.
 
         Parameters:
-            manufacturer_names: List of manufacturer names to search for
+            manufacturer_name: Manufacturer name to search for
 
         Returns:
-            List of manufacturer website URLs
+            Products page URL for the manufacturer's website
         """
-        results = []
-        for name in manufacturer_names:
-            response = await self._chain.invoke(name)
-            results.append(response)
+        query = f"{manufacturer_name} products page"
+        results = await self.perform_search(query, 10)
 
-        return results
+        return await self._determine_url(results, manufacturer_name)
