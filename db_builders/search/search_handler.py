@@ -4,9 +4,9 @@ from typing import List
 
 from langchain_openai import ChatOpenAI
 
+from db_builders.base_search import BaseSearchHandler
 from db_builders.typedefs import Manufacturer
 from db_builders.utils import strip_url
-from .base_search import BaseSearchHandler
 from .manufacturer_checker import SiteDoubleChecker
 from .name_extractor import NameExtractor
 from .site_checker import SiteChecker

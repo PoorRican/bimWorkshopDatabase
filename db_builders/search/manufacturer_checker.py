@@ -4,7 +4,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import Runnable
 from langchain_openai import ChatOpenAI
 
-from db_builders.search.base_search import BaseSearchHandler
+from db_builders.base_search import BaseSearchHandler
 from db_builders.utils import retry_on_ratelimit
 
 load_dotenv()

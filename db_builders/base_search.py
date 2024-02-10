@@ -19,6 +19,10 @@ if SEARCH_ENGINE_ID is None:
 
 
 class BaseSearchHandler:
+    """ Base class for search handlers.
+
+    This class contains a method for performing a search using the Google custom search API.
+    """
     _session: aiohttp.ClientSession
 
     def __init__(self):
