@@ -1,3 +1,5 @@
+import warnings
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import Runnable
@@ -52,7 +54,10 @@ class WebsiteFinder(BaseSearchHandler):
         """
         url_pattern = re.compile(r'https://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
         urls = re.findall(url_pattern, response)
-        return urls[0]
+        try:
+            return urls[0]
+        except IndexError:
+            return ''
 
     @retry_on_ratelimit()
     async def _determine_url(self, results: list[SearchResultItem], manufacturer: str) -> str:
@@ -66,19 +71,9 @@ class WebsiteFinder(BaseSearchHandler):
             Manufacturer website URL
         """
         formatted_results = self._format_results(results)
-        response = await self._chain.invoke({'search_results': formatted_results, 'manufacturer': manufacturer})
+        response = await self._chain.ainvoke({'search_results': formatted_results, 'manufacturer': manufacturer})
 
         return self._extract_url(response)
-
-    async def _get_website(self, name: str) -> str:
-        """ Get the manufacturer's website.
-
-        Parameters:
-            name: Manufacturer name to search for
-
-        Returns:
-            Manufacturer website URL
-        """
 
     async def __call__(self, manufacturer_name: str) -> str:
         """ Accept a manufacturer name then search for the products page for the manufacturer's website.
@@ -91,5 +86,6 @@ class WebsiteFinder(BaseSearchHandler):
         """
         query = f"{manufacturer_name} products page"
         results = await self.perform_search(query, 10)
+        await self._session.close()
 
         return await self._determine_url(results, manufacturer_name)

@@ -3,6 +3,7 @@
 from asyncio import run
 from pathlib import Path
 
+from db_builders.name_finder.runtime import MANUFACTURER_NAME_FILE, product_page_search_runtime
 from db_builders.omniclass.runtime import generate_omniclass_tables, OMNICLASS_SAVE_PATH
 from db_builders.loading import parse_remaining
 from db_builders.search.runtime import manufacturer_search_runtime, MANUFACTURER_SAVE_PATH
@@ -10,7 +11,7 @@ from db_builders.utils import print_bar
 
 REMAINING_FN = Path('remaining.csv')
 
-VALID_MODES = ['1', '2']
+VALID_MODES = ['1', '2', '3']
 
 
 # escape codes
@@ -27,6 +28,7 @@ def get_mode() -> str:
         print(f"Please select a mode: {LIGHT_GRAY}(Input a number to select){RESET}")
         print("1. Generate omniclass tables")
         print("2. Search for manufacturers")
+        print("3. Get product pages")
         print("0. Exit")
         print()
 
@@ -80,3 +82,13 @@ if __name__ == '__main__':
         print(f"{RED}Press Ctrl+C to cancel at any time.{RESET}\n")
 
         run(manufacturer_search_runtime(OMNICLASS_LIST))
+
+    elif current_mode == '3':
+        print(CLEAR)
+
+        print_bar("== Getting Product Pages ==")
+        print(f"Manufacturer data will be loaded from: {LIGHT_BLUE}{MANUFACTURER_NAME_FILE}{RESET}")
+        print("This process may take a while...")
+        print(f"{RED}Press Ctrl+C to cancel at any time.{RESET}\n")
+
+        run(product_page_search_runtime())
