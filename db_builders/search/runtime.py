@@ -62,9 +62,9 @@ async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
     MANUFACTURER_SAVE_PATH.mkdir(parents=True, exist_ok=True)
 
     # search for manufacturers
-    async with SearchHandler(GPT3_LOW_T) as handler:
-        for omniclass in omniclasses:
-            await _search_for_manufacturers(omniclass, handler, 200)
+    handler = SearchHandler(GPT3_LOW_T)
+    for omniclass in omniclasses:
+        await _search_for_manufacturers(omniclass, handler, 200)
 
     # print the number of products that were processed
     print(f"\nProcessed {len(omniclasses)} products.")

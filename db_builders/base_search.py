@@ -26,7 +26,6 @@ class BaseSearchHandler:
 
     Any child instance of this class must be used as an asynchronous context manager.
     """
-    _session: aiohttp.ClientSession = None
     HEADERS: ClassVar[dict] = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
                                              'AppleWebKit/537.36 (KHTML, like Gecko) '
                                              'Chrome/120.0.0.0 Safari/537.36'
@@ -45,34 +44,23 @@ class BaseSearchHandler:
         results = []
 
         pages = num_results // 10
-        for page in range(pages):
-            start = page * 10 + 1
-            # doc: https://developers.google.com/custom-search/v1/using_rest
-            url = f"{BASE_URL}?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&start={start}"
-            async with self._session.get(url) as resp:
-                data = await resp.json()
-                try:
-                    items = data['items']
-                    for item in items:
-                        results.append(
-                            SearchResultItem(
-                                title=item['title'],
-                                link=item['link'],
-                                snippet=item['snippet']
-                            ))
-                except KeyError:
-                    # no results
-                    pass
+        async with aiohttp.ClientSession(headers=self.HEADERS) as session:
+            for page in range(pages):
+                start = page * 10 + 1
+                # doc: https://developers.google.com/custom-search/v1/using_rest
+                url = f"{BASE_URL}?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&start={start}"
+                async with session.get(url) as resp:
+                    data = await resp.json()
+                    try:
+                        items = data['items']
+                        for item in items:
+                            results.append(
+                                SearchResultItem(
+                                    title=item['title'],
+                                    link=item['link'],
+                                    snippet=item['snippet']
+                                ))
+                    except KeyError:
+                        # no results
+                        pass
         return results
-
-    async def __aenter__(self):
-        # setup aiohttp session
-        self._session = aiohttp.ClientSession(headers=self.HEADERS)
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool:
-        """ Close the aiohttp session
-
-        This must be called when this specific search handler instance is no longer needed.
-        """
-        await self._session.close()
-        return True
