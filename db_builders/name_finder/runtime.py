@@ -3,7 +3,7 @@ import csv
 from pathlib import Path
 
 from db_builders.llm import GPT3_LOW_T
-from db_builders.name_finder.finder import WebsiteFinder
+from db_builders.name_finder.website_finder import WebsiteFinder
 from db_builders.name_finder.parsing import parse_name_file
 
 MANUFACTURER_NAME_FILE = 'manufacturer_names.csv'

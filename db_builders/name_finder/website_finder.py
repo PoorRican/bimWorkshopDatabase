@@ -13,7 +13,7 @@ from db_builders.utils import retry_on_ratelimit
 _WEBSITE_CHECKER_PROMPT = PromptTemplate.from_template(
     """You will be given a list of search results for a manufacturer company named {manufacturer}.
     
-Your job is to determine which URL is the product page for the {manufacturer} website.
+Your job is to determine which site is the website for {manufacturer}.
 
 Search Results:
 {search_results}
@@ -84,7 +84,7 @@ class WebsiteFinder(BaseSearchHandler):
         Returns:
             Products page URL for the manufacturer's website
         """
-        query = f"{manufacturer_name} products page"
+        query = f"{manufacturer_name} manufacturer website"
         results = await self.perform_search(query, 10)
 
         return await self._determine_url(results, manufacturer_name)
