@@ -3,13 +3,12 @@ import csv
 from pathlib import Path
 
 from db_builders.llm import GPT3_LOW_T
+from db_builders.name_finder.product_page_finder import ProductPageFinder
 from db_builders.name_finder.website_finder import WebsiteFinder
 from db_builders.name_finder.parsing import parse_name_file
 
 MANUFACTURER_NAME_FILE = 'manufacturer_names.csv'
 MANUFACTURER_URLS_SAVE_PATH = Path('data/manufacturer_product_pages.csv')
-
-# TODO: if performance is bad, get manufacturer url, then perform another search using the site
 
 
 def _save_manufacturer_urls(urls: dict[str, str], save_path: Path):
@@ -29,15 +28,26 @@ async def _get_manufacturer_urls(file_path: str) -> dict[str, str]:
     names = parse_name_file(file_path)
 
     batch = 10
-    urls = {}
 
+    # find manufacturer websites
+    base_urls = {}
     finder = WebsiteFinder(GPT3_LOW_T)
 
     for i in range(0, len(names), batch):
-        print(f"Getting URLs for names {i} to {i + batch}...")
         names_batch = names[i:i + batch]
         tasks = [finder(name) for name in names_batch]
         results = await asyncio.gather(*tasks)
+        base_urls.update({name: result for name, result in zip(names_batch, results)})
+
+    # find product pages
+    urls = {}
+    finder = ProductPageFinder(GPT3_LOW_T)
+
+    for i in range(0, len(names), batch):
+        names_batch = names[i:i + batch]
+        tasks = [finder(name, base_urls[name]) for name in names_batch]
+        results = await asyncio.gather(*tasks)
+
         urls.update({name: result for name, result in zip(names_batch, results)})
 
     return urls
