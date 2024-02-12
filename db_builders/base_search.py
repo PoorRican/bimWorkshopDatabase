@@ -23,8 +23,6 @@ class BaseSearchHandler:
     """ Base class for search handlers.
 
     This class contains a method for performing a search using the Google custom search API.
-
-    Any child instance of this class must be used as an asynchronous context manager.
     """
     HEADERS: ClassVar[dict] = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
                                              'AppleWebKit/537.36 (KHTML, like Gecko) '
