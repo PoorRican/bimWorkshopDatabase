@@ -18,7 +18,7 @@ Return the URL of the {manufacturer}'s website.""")
 
 
 class WebsiteFinder(BaseFinder):
-    """ Functor which accepts a manufacturer name then find the products page for the manufacturer website. """
+    """ Functor which accepts a manufacturer name and finds the manufacturer website. """
     _chain: Runnable
 
     def __init__(self, llm: ChatOpenAI):
