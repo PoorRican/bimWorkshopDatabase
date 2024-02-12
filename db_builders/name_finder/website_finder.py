@@ -57,6 +57,7 @@ class WebsiteFinder(BaseSearchHandler):
         try:
             return urls[0]
         except IndexError:
+            warnings.warn("Could not find URL")
             return ''
 
     @retry_on_ratelimit()
