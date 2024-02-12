@@ -86,6 +86,5 @@ class WebsiteFinder(BaseSearchHandler):
         """
         query = f"{manufacturer_name} products page"
         results = await self.perform_search(query, 10)
-        await self._session.close()
 
         return await self._determine_url(results, manufacturer_name)

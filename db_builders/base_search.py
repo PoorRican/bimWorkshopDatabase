@@ -1,4 +1,5 @@
 import os
+from typing import ClassVar
 
 import aiohttp
 from dotenv import load_dotenv
@@ -22,17 +23,14 @@ class BaseSearchHandler:
     """ Base class for search handlers.
 
     This class contains a method for performing a search using the Google custom search API.
-    """
-    _session: aiohttp.ClientSession
 
-    def __init__(self):
-        # setup aiohttp session
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/120.0.0.0 Safari/537.36'
-        }
-        self._session = aiohttp.ClientSession(headers=headers)
+    Any child instance of this class must be used as an asynchronous context manager.
+    """
+    _session: aiohttp.ClientSession = None
+    HEADERS: ClassVar[dict] = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                                             'AppleWebKit/537.36 (KHTML, like Gecko) '
+                                             'Chrome/120.0.0.0 Safari/537.36'
+                               }
 
     async def perform_search(self, query: str, num_results: int = 100) -> list[SearchResultItem]:
         """ Perform a search using the Google custom search API
@@ -67,3 +65,14 @@ class BaseSearchHandler:
                     pass
         return results
 
+    async def __aenter__(self):
+        # setup aiohttp session
+        self._session = aiohttp.ClientSession(headers=self.HEADERS)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool:
+        """ Close the aiohttp session
+
+        This must be called when this specific search handler instance is no longer needed.
+        """
+        await self._session.close()
+        return True

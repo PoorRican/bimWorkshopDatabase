@@ -28,16 +28,16 @@ async def _get_manufacturer_urls(file_path: str) -> dict[str, str]:
     """
     names = parse_name_file(file_path)
 
-    finder = WebsiteFinder(GPT3_LOW_T)
-
     batch = 10
     urls = {}
-    for i in range(0, len(names), batch):
-        print(f"Getting URLs for names {i} to {i + batch}...")
-        names_batch = names[i:i + batch]
-        tasks = [finder(name) for name in names_batch]
-        results = await asyncio.gather(*tasks)
-        urls.update({name: result for name, result in zip(names_batch, results)})
+
+    async with WebsiteFinder(GPT3_LOW_T) as finder:
+        for i in range(0, len(names), batch):
+            print(f"Getting URLs for names {i} to {i + batch}...")
+            names_batch = names[i:i + batch]
+            tasks = [finder(name) for name in names_batch]
+            results = await asyncio.gather(*tasks)
+            urls.update({name: result for name, result in zip(names_batch, results)})
 
     return urls
 
