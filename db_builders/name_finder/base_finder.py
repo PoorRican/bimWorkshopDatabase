@@ -1,5 +1,5 @@
 import re
-import warnings
+
 from abc import ABC
 from langchain_core.runnables import Runnable
 
@@ -39,7 +39,6 @@ class BaseFinder(BaseSearchHandler, ABC):
         try:
             return urls[0]
         except IndexError:
-            warnings.warn("Could not find URL")
             return ''
 
     @retry_on_ratelimit()
