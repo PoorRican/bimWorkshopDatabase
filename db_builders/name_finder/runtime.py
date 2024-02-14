@@ -1,6 +1,7 @@
 import asyncio
 import csv
 from pathlib import Path
+from typing import Tuple
 
 from db_builders.llm import GPT3_LOW_T
 from db_builders.name_finder.product_page_finder import ProductPageFinder
@@ -12,46 +13,53 @@ MANUFACTURER_NAME_FILE = 'manufacturer_names.csv'
 MANUFACTURER_URLS_SAVE_PATH = Path('data/manufacturer_product_pages.csv')
 
 
-def _save_manufacturer_urls(urls: dict[str, str], save_path: Path):
+def _save_manufacturer_urls(urls: dict[str, Tuple[str, str]], save_path: Path):
     """ Save the manufacturer URLs to a CSV file.
     """
     with open(save_path, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(['manufacturer name', 'product page'])
+        writer.writerow(['manufacturer name', 'url', 'product page'])
 
-        for name, url in urls.items():
-            writer.writerow([name, url])
+        for name, urls in urls.items():
+            url, product_page = urls
+            writer.writerow([name, url, product_page])
 
 
-async def _get_manufacturer_urls(file_path: str) -> dict[str, str]:
-    """ Get the manufacturer URLs for the given manufacturer names
+async def _find_manufacturer_urls(manufacturer_name: str) -> Tuple[str, str]:
+    """ Get the manufacturer URL for the given manufacturer name
+
+    Parameters:
+        manufacturer_name: Manufacturer name to search for
+
+    Returns:
+        Tuple of website URL and product page URL
+    """
+    # find manufacturer website
+    finder = WebsiteFinder(GPT3_LOW_T)
+    base_url = await finder(manufacturer_name)
+
+    base_url = strip_url(base_url)
+
+    # find product page
+    finder = ProductPageFinder(GPT3_LOW_T)
+    product_page = await finder(manufacturer_name, base_url)
+
+    return base_url, product_page
+
+
+async def _perform_manufacture_url_search(file_path: str) -> dict[str, Tuple[str, str]]:
+    """ Get the manufacturer URLs for the local file.
     """
     names = parse_name_file(file_path)
 
     batch = 10
 
     # find manufacturer websites
-    base_urls = {}
-    finder = WebsiteFinder(GPT3_LOW_T)
-
-    for i in range(0, len(names), batch):
-        names_batch = names[i:i + batch]
-        tasks = [finder(name) for name in names_batch]
-        results = await asyncio.gather(*tasks)
-        base_urls.update({name: result for name, result in zip(names_batch, results)})
-
-    # clean up base urls
-    base_urls = {name: strip_url(url) for name, url in base_urls.items()}
-
-    # find product pages
     urls = {}
-    finder = ProductPageFinder(GPT3_LOW_T)
-
     for i in range(0, len(names), batch):
         names_batch = names[i:i + batch]
-        tasks = [finder(name, base_urls[name]) for name in names_batch]
+        tasks = [_find_manufacturer_urls(name) for name in names_batch]
         results = await asyncio.gather(*tasks)
-
         urls.update({name: result for name, result in zip(names_batch, results)})
 
     return urls
@@ -60,5 +68,5 @@ async def _get_manufacturer_urls(file_path: str) -> dict[str, str]:
 async def product_page_search_runtime():
     """ Perform the search for manufacturer product pages.
     """
-    urls = await _get_manufacturer_urls(MANUFACTURER_NAME_FILE)
+    urls = await _perform_manufacture_url_search(MANUFACTURER_NAME_FILE)
     _save_manufacturer_urls(urls, MANUFACTURER_URLS_SAVE_PATH)
