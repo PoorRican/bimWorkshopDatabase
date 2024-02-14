@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 
 from openai import RateLimitError, InternalServerError, APIConnectionError, APITimeoutError, APIResponseValidationError
 
+from db_builders.typedefs import SearchResultItem
+
 
 def retry_on_ratelimit():
     """ Decorator which retries an asynchronous OpenAI call if a RateLimitError or any other openai error is raised. """
@@ -59,3 +61,23 @@ def strip_url(url: str) -> str:
             ._replace(query='')
             ._replace(fragment='')
             .geturl())
+
+
+def filter_results(results: list[SearchResultItem]) -> list[SearchResultItem]:
+    """ Filter out irrelevant search results from a list of search results.
+
+    This uses a list of keywords to exclude irrelevant search results.
+
+    Parameters:
+        results: List of search results to filter
+
+    Returns:
+        List of valid `SearchResultItem` objects
+    """
+    exclude = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowes', 'homedepot', 'walmart',
+               'target.com', '.gov', 'acehardware', 'business', 'news', 'alibaba', 'aliexpress', 'wikipedia',
+               'youtube', 'facebook', 'twitter', 'instagram', 'pinterest', 'linkedin', 'yelp', 'bbb', 'glassdoor',
+               'biz', 'bloomberg', 'forbes.com', 'fortune.com', 'inc', 'investopedia', 'money', 'nasdaq', 'nyse',
+               'reuters', 'seekingalpha', 'stocktwits', 'thestreet', 'wsj', 'yahoo', 'yahoofinance', 'zacks.com',
+               'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr',]
+    return [result for result in results if not any(word in result.link for word in exclude)]

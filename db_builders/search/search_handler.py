@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 
 from db_builders.base_search import BaseSearchHandler
 from db_builders.typedefs import Manufacturer
-from db_builders.utils import strip_url
+from db_builders.utils import strip_url, filter_results
 from .manufacturer_checker import SiteDoubleChecker
 from .name_extractor import NameExtractor
 from .site_checker import SiteChecker
@@ -65,13 +65,7 @@ class SearchHandler(BaseSearchHandler):
         print(f"  - Got {len(results)} results.")
 
         # perform a keyword filter to remove irrelevant results
-        exclude = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowes', 'homedepot', 'walmart',
-                   'target.com', '.gov', 'acehardware', 'business', 'news', 'alibaba', 'aliexpress', 'wikipedia',
-                   'youtube', 'facebook', 'twitter', 'instagram', 'pinterest', 'linkedin', 'yelp', 'bbb', 'glassdoor',
-                   'biz', 'bloomberg', 'forbes.com', 'fortune.com', 'inc', 'investopedia', 'money', 'nasdaq', 'nyse',
-                   'reuters', 'seekingalpha', 'stocktwits', 'thestreet', 'wsj', 'yahoo', 'yahoofinance', 'zacks.com',
-                   'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr',]
-        results = [result for result in results if not any(word in result.link for word in exclude)]
+        results = filter_results(results)
 
         print(f"  - Filtered results down to {len(results)}")
 

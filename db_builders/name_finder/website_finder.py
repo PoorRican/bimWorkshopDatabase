@@ -4,7 +4,7 @@ from langchain_core.runnables import Runnable
 from langchain_openai import ChatOpenAI
 
 from db_builders.name_finder.base_finder import BaseFinder
-
+from db_builders.utils import filter_results
 
 _WEBSITE_CHECKER_PROMPT = PromptTemplate.from_template(
     """You will be given a list of search results for a manufacturer company named {manufacturer}.
@@ -37,5 +37,7 @@ class WebsiteFinder(BaseFinder):
         """
         query = f"{manufacturer_name} manufacturer website"
         results = await self.perform_search(query, 50)
+
+        results = filter_results(results)
 
         return await self._determine_url(results, manufacturer_name)
