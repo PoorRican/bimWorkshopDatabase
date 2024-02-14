@@ -6,6 +6,7 @@ from db_builders.llm import GPT3_LOW_T
 from db_builders.name_finder.product_page_finder import ProductPageFinder
 from db_builders.name_finder.website_finder import WebsiteFinder
 from db_builders.name_finder.parsing import parse_name_file
+from db_builders.utils import strip_url
 
 MANUFACTURER_NAME_FILE = 'manufacturer_names.csv'
 MANUFACTURER_URLS_SAVE_PATH = Path('data/manufacturer_product_pages.csv')
@@ -38,6 +39,9 @@ async def _get_manufacturer_urls(file_path: str) -> dict[str, str]:
         tasks = [finder(name) for name in names_batch]
         results = await asyncio.gather(*tasks)
         base_urls.update({name: result for name, result in zip(names_batch, results)})
+
+    # clean up base urls
+    base_urls = {name: strip_url(url) for name, url in base_urls.items()}
 
     # find product pages
     urls = {}
