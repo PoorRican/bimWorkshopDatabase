@@ -50,11 +50,12 @@ if __name__ == '__main__':
     print(CLEAR)
 
     print_bar("== Select Mode ==")
+    print()
 
     # try to parse the remaining products
     try:
         OMNICLASS_LIST = parse_remaining(REMAINING_FN)
-        print(f"{len(OMNICLASS_LIST)} omniclasses have been loaded.\n")
+        print(f"{LIGHT_BLUE}{len(OMNICLASS_LIST)} omniclasses{RESET} have been loaded.")
     except FileNotFoundError:
         print(f"Could not find file: {LIGHT_BLUE}{REMAINING_FN}{RESET}")
         OMNICLASS_LIST = None
@@ -62,12 +63,13 @@ if __name__ == '__main__':
     # try to parse manufacturer names
     try:
         MANUFACTURER_NAMES = parse_name_file(MANUFACTURER_NAME_FILE)
-        print(f"{len(MANUFACTURER_NAMES)} manufacturer names have been loaded.\n")
+        print(f"{LIGHT_BLUE}{len(MANUFACTURER_NAMES)} manufacturer names{RESET} have been loaded.")
     except FileNotFoundError:
         print(f"Could not find file: {LIGHT_BLUE}{MANUFACTURER_NAME_FILE}{RESET}")
         MANUFACTURER_NAMES = None
 
     # select mode
+    print()
     current_mode = get_mode()
 
     # generate omniclass tables
