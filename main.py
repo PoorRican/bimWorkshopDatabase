@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import os
 from asyncio import run
 from pathlib import Path
 
@@ -46,6 +46,9 @@ def get_mode() -> str:
 
 
 if __name__ == '__main__':
+    # create data directory
+    os.mkdir("data")
+
     # clear terminal window
     print(CLEAR)
 
