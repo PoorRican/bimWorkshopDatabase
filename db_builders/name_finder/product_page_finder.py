@@ -35,6 +35,6 @@ class ProductPageFinder(BaseFinder):
             Products page URL
         """
         query = f"{manufacturer_name} site:{site} products"
-        results = await self.perform_search(query, 10)
+        results = await self.perform_search(query, 20)
 
         return await self._determine_url(results, manufacturer_name)

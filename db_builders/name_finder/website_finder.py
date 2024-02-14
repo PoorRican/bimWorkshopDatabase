@@ -36,6 +36,6 @@ class WebsiteFinder(BaseFinder):
             Products page URL for the manufacturer's website
         """
         query = f"{manufacturer_name} manufacturer website"
-        results = await self.perform_search(query, 20)
+        results = await self.perform_search(query, 50)
 
         return await self._determine_url(results, manufacturer_name)
