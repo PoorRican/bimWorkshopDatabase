@@ -6,7 +6,6 @@ from typing import Tuple
 from db_builders.llm import GPT3_LOW_T
 from db_builders.name_finder.product_page_finder import ProductPageFinder
 from db_builders.name_finder.website_finder import WebsiteFinder
-from db_builders.name_finder.parsing import parse_name_file
 from db_builders.utils import strip_url, print_bar
 
 MANUFACTURER_NAME_FILE = 'manufacturer_names.csv'
@@ -52,11 +51,14 @@ async def _perform_manufacture_url_search(file_path: str) -> dict[str, Tuple[str
     """
 
 
-async def product_page_search_runtime():
-    """ Perform the search for manufacturer product pages.
-    """
-    names = parse_name_file(MANUFACTURER_NAME_FILE)
+async def product_page_search_runtime(names: list[str]):
+    """ Perform the search for manufacturer product pages and save to disk.
 
+    Results are incrementally saved to disk after each batch of names is processed.
+
+    Parameters:
+        names: List of manufacturer names to search for
+    """
     batch = 10
 
     # find manufacturer websites

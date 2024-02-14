@@ -3,6 +3,7 @@
 from asyncio import run
 from pathlib import Path
 
+from db_builders.name_finder.parsing import parse_name_file
 from db_builders.name_finder.runtime import MANUFACTURER_NAME_FILE, product_page_search_runtime
 from db_builders.omniclass.runtime import generate_omniclass_tables, OMNICLASS_SAVE_PATH
 from db_builders.loading import parse_remaining
@@ -48,21 +49,32 @@ if __name__ == '__main__':
     # clear terminal window
     print(CLEAR)
 
-    # parse the remaining products
+    print_bar("== Select Mode ==")
+
+    # try to parse the remaining products
     try:
         OMNICLASS_LIST = parse_remaining(REMAINING_FN)
+        print(f"{len(OMNICLASS_LIST)} omniclasses have been loaded.\n")
     except FileNotFoundError:
         print(f"Could not find file: {LIGHT_BLUE}{REMAINING_FN}{RESET}")
-        exit(1)
+        OMNICLASS_LIST = None
+
+    # try to parse manufacturer names
+    try:
+        MANUFACTURER_NAMES = parse_name_file(MANUFACTURER_NAME_FILE)
+        print(f"{len(MANUFACTURER_NAMES)} manufacturer names have been loaded.\n")
+    except FileNotFoundError:
+        print(f"Could not find file: {LIGHT_BLUE}{MANUFACTURER_NAME_FILE}{RESET}")
+        MANUFACTURER_NAMES = None
 
     # select mode
-    print_bar("== Select Mode ==")
-    print(f"{len(OMNICLASS_LIST)} omniclasses have been loaded.\n")
-
     current_mode = get_mode()
 
     # generate omniclass tables
     if current_mode == '1':
+        if OMNICLASS_LIST is None:
+            print(f"{RED}No omniclass data found. Exiting...{RESET}")
+            exit(1)
         print(CLEAR)
 
         print_bar("== Generating Omniclass Tables ==")
@@ -74,6 +86,9 @@ if __name__ == '__main__':
 
     # search for manufacturers
     elif current_mode == '2':
+        if OMNICLASS_LIST is None:
+            print(f"{RED}No omniclass data found. Exiting...{RESET}")
+            exit(1)
         print(CLEAR)
 
         print_bar("== Searching for Manufacturers ==")
@@ -84,6 +99,9 @@ if __name__ == '__main__':
         run(manufacturer_search_runtime(OMNICLASS_LIST))
 
     elif current_mode == '3':
+        if MANUFACTURER_NAMES is None:
+            print(f"{RED}No manufacturer names found. Exiting...{RESET}")
+            exit(1)
         print(CLEAR)
 
         print_bar("== Getting Product Pages ==")
@@ -91,4 +109,4 @@ if __name__ == '__main__':
         print("This process may take a while...")
         print(f"{RED}Press Ctrl+C to cancel at any time.{RESET}\n")
 
-        run(product_page_search_runtime())
+        run(product_page_search_runtime(MANUFACTURER_NAMES))
