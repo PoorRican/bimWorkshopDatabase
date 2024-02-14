@@ -7,7 +7,7 @@ from db_builders.llm import GPT3_LOW_T
 from db_builders.name_finder.product_page_finder import ProductPageFinder
 from db_builders.name_finder.website_finder import WebsiteFinder
 from db_builders.name_finder.parsing import parse_name_file
-from db_builders.utils import strip_url
+from db_builders.utils import strip_url, print_bar
 
 MANUFACTURER_NAME_FILE = 'manufacturer_names.csv'
 MANUFACTURER_URLS_SAVE_PATH = Path('data/manufacturer_product_pages.csv')
@@ -50,28 +50,33 @@ async def _find_manufacturer_urls(manufacturer_name: str) -> Tuple[str, str]:
 async def _perform_manufacture_url_search(file_path: str) -> dict[str, Tuple[str, str]]:
     """ Get the manufacturer URLs for the local file.
     """
-    names = parse_name_file(file_path)
+
+
+async def product_page_search_runtime():
+    """ Perform the search for manufacturer product pages.
+    """
+    names = parse_name_file(MANUFACTURER_NAME_FILE)
 
     batch = 10
 
     # find manufacturer websites
     urls = {}
     for i in range(0, len(names), batch):
+
         if i + batch > len(names):
             last = len(names) - i
         else:
             last = i + batch
         print(f"Processing batch {i + 1} - {last} of {len(names)} manufacturer names")
+
         names_batch = names[i:i + batch]
         tasks = [_find_manufacturer_urls(name) for name in names_batch]
         results = await asyncio.gather(*tasks)
+
         urls.update({name: result for name, result in zip(names_batch, results)})
 
-    return urls
+        _save_manufacturer_urls(urls, MANUFACTURER_URLS_SAVE_PATH)
 
+    print_bar("== Finished ==")
 
-async def product_page_search_runtime():
-    """ Perform the search for manufacturer product pages.
-    """
-    urls = await _perform_manufacture_url_search(MANUFACTURER_NAME_FILE)
-    _save_manufacturer_urls(urls, MANUFACTURER_URLS_SAVE_PATH)
+    print(f"Processed {len(urls)} manufacturer names")
