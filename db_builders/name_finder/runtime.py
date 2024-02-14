@@ -57,6 +57,11 @@ async def _perform_manufacture_url_search(file_path: str) -> dict[str, Tuple[str
     # find manufacturer websites
     urls = {}
     for i in range(0, len(names), batch):
+        if i + batch > len(names):
+            last = len(names) - i
+        else:
+            last = i + batch
+        print(f"Processing batch {i + 1} - {last} of {len(names)} manufacturer names")
         names_batch = names[i:i + batch]
         tasks = [_find_manufacturer_urls(name) for name in names_batch]
         results = await asyncio.gather(*tasks)
