@@ -10,6 +10,7 @@ from db_builders.loading import parse_remaining
 from db_builders.search.runtime import manufacturer_search_runtime, MANUFACTURER_SAVE_PATH
 from db_builders.utils import print_bar
 
+DATA_DIR = Path('data')
 REMAINING_FN = Path('remaining.csv')
 
 VALID_MODES = ['1', '2', '3']
@@ -47,7 +48,7 @@ def get_mode() -> str:
 
 if __name__ == '__main__':
     # create data directory
-    os.mkdir("data")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # clear terminal window
     print(CLEAR)
