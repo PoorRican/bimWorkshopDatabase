@@ -21,7 +21,11 @@ def parse_name_file(file_path: str) -> list[str]:
         reader = csv.reader(f)
 
         for row in reader:
-            name = row[0].strip()
-            names.append(name)
+            try:
+                name = row[0].strip()
+                names.append(name)
+            except IndexError:
+                # skip empty lines
+                pass
 
     return names
