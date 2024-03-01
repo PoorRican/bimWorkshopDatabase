@@ -75,9 +75,17 @@ class SiteDoubleChecker(BaseSearchHandler):
         query = f"what is {site} site:{site}"
         results = await self.perform_search(query, num_results=5)
 
+        if not results:
+            print(f"Could not find any search results for {site}")
+            return False
+
         # format search results
         formatted_results = ""
         for result in results:
             formatted_results += f"Title: {result.title}\nURL: {result.link}\nDescription: {result.snippet}\n\n"
 
-        return await self._check(formatted_results)
+        try:
+            return await self._check(formatted_results)
+        except ValueError as e:
+            print(f"Uncaught exception: {e}")
+            return False
