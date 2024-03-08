@@ -41,13 +41,26 @@ class BaseSearchHandler:
         """
         results = []
 
-        pages = num_results // 10
+        # if `num_results` is less than 10, force one page
+        if num_results > 10:
+            pages = num_results // 10
+        else:
+            pages = 1
+
         async with aiohttp.ClientSession(headers=self.HEADERS) as session:
             for page in range(pages):
                 start = page * 10 + 1
                 # doc: https://developers.google.com/custom-search/v1/using_rest
                 url = f"{BASE_URL}?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&start={start}"
+
+                if num_results < 10:
+                    url += f"&num={num_results}"
+
                 async with session.get(url) as resp:
+                    if resp.status != 200:
+                        print(f"Got status code {resp.status} from Google API.")
+                        print(await resp.text())
+                        continue
                     data = await resp.json()
                     try:
                         items = data['items']

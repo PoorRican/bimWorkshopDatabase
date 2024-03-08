@@ -72,11 +72,11 @@ class SiteDoubleChecker(BaseSearchHandler):
         Returns:
             True if site is a manufacturer site, False otherwise
         """
-        query = f"what is {site} site:{site}"
+        query = f"about site:{site}"
         results = await self.perform_search(query, num_results=5)
 
         if not results:
-            print(f"Could not find any search results for {site}")
+            print(f"  - Could not find any search results for {site}")
             return False
 
         # format search results
