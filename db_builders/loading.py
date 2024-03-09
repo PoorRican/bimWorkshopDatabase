@@ -25,7 +25,7 @@ def parse_remaining(path: Path) -> list[OmniClass]:
         reader = csv.reader(f)
 
         for row in reader:
-            omniclass = OmniClass(row[0], row[1])
+            omniclass = OmniClass(number=row[0], name=row[1])
             omniclass_names.append(omniclass)
 
     return omniclass_names

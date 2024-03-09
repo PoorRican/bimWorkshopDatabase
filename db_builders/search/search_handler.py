@@ -103,7 +103,7 @@ class SearchHandler(BaseSearchHandler):
         manufacturers = []
         for name, url in zip(manufacturer_names, urls):
             stripped_url = strip_url(url)
-            manufacturers.append(Manufacturer(name, stripped_url))
+            manufacturers.append(Manufacturer(title=name, url=stripped_url))
 
         # deduplicate manufacturers
         manufacturers = self._deduplicate_manufacturers(manufacturers)

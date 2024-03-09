@@ -1,20 +1,17 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Manufacturer:
+class Manufacturer(BaseModel):
     title: str
     url: str
 
 
-@dataclass
-class Parameter:
+class Parameter(BaseModel):
     name: str
     values: list[str]
 
 
-@dataclass
-class OmniClass:
+class OmniClass(BaseModel):
     """ A class to represent an OmniClass product.
 
     This is used to store the name of the product and the name of the CSV file that was generated for it.
@@ -26,8 +23,7 @@ class OmniClass:
         return f"{self.number} {self.name}"
 
 
-@dataclass
-class SearchResultItem:
+class SearchResultItem(BaseModel):
     """ This is used to parse the results from the Google custom search API """
     title: str
     link: str

@@ -76,7 +76,7 @@ async def generate_values(product_name: str, ai_message: AIMessage, parameter_na
         try:
             values = await _generate_values(product_name, parameter_name, ai_message)
             if len(values) == 20:
-                return Parameter(parameter_name, values)
+                return Parameter(name=parameter_name, values=values)
             else:
                 print(f"Got less than 20 values for {feedback_msg}, retrying...")
         except RateLimitError:
