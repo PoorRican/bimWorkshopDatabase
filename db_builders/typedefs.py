@@ -11,8 +11,8 @@ class Parameter(BaseModel):
     values: list[str]
 
 
-class OmniClass(BaseModel):
-    """ A class to represent an OmniClass product.
+class Omniclass(BaseModel):
+    """ A class to represent an Omniclass product.
 
     This is used to store the name of the product and the name of the CSV file that was generated for it.
     """

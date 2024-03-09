@@ -4,13 +4,13 @@ from pathlib import Path
 
 from db_builders.llm import GPT3_LOW_T
 from db_builders.search.search_handler import SearchHandler
-from db_builders.typedefs import Manufacturer, OmniClass
+from db_builders.typedefs import Manufacturer, Omniclass
 
 
 MANUFACTURER_SAVE_PATH = Path('data/manufacturers')
 
 
-async def _search_for_manufacturers(omniclass: OmniClass,
+async def _search_for_manufacturers(omniclass: Omniclass,
                                     handler: SearchHandler,
                                     num_results: int = 100):
     """ Search for manufacturers for a given omniclass.
@@ -27,7 +27,7 @@ async def _search_for_manufacturers(omniclass: OmniClass,
     _save_manufacturers(omniclass, results)
 
 
-def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer]):
+def _save_manufacturers(omniclass: Omniclass, manufacturers: list[Manufacturer]):
     """ Save manufacturers to a CSV file.
 
     The CSV file will be saved in the `data/manufacturers` directory and named appropriately
@@ -48,7 +48,7 @@ def _save_manufacturers(omniclass: OmniClass, manufacturers: list[Manufacturer])
     print(f"\u2514 Saved CSV file.\n")
 
 
-async def manufacturer_search_runtime(omniclasses: list[OmniClass]):
+async def manufacturer_search_runtime(omniclasses: list[Omniclass]):
     """ Find all manufacturers and save the data to a CSV file.
 
     This is the main entry point for the manufacturer search runtime and should be the only function
