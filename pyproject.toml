@@ -14,5 +14,5 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["db_builders", "db_builders.omniclass", "db_builders.search"]
+packages = ["db_builders", "db_builders.omniclass", "db_builders.search", "db_builders.typedefs"]
 include-package-data = true
