@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage
 from openai import RateLimitError
 
 from .chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
-from db_builders.typedefs import OmniClass, Parameter
+from db_builders.typedefs import Omniclass, Parameter
 from db_builders.llm import GPT3_LOW_T, GPT3_HIGH_T
 
 PARAMETER_CHAIN = build_parameter_chain(GPT3_HIGH_T)
@@ -85,7 +85,7 @@ async def generate_values(product_name: str, ai_message: AIMessage, parameter_na
             print(f"Could not understand response when generating values for {feedback_msg}, retrying...")
 
 
-def save_product(path: Path, omniclass: OmniClass, kv_columns: Dict[str, List[str]]) -> None:
+def save_product(path: Path, omniclass: Omniclass, kv_columns: Dict[str, List[str]]) -> None:
     """ Save a product's parameters and values to a CSV file.
 
     Parameters
