@@ -76,7 +76,7 @@ async def generate_values(product_name: str, ai_message: AIMessage, parameter_na
         try:
             values = await _generate_values(product_name, parameter_name, ai_message)
             if len(values) == 20:
-                return Parameter(parameter_name, values)
+                return Parameter(name=parameter_name, values=values)
             else:
                 print(f"Got less than 20 values for {feedback_msg}, retrying...")
         except RateLimitError:
@@ -92,8 +92,8 @@ def save_product(path: Path, omniclass: OmniClass, kv_columns: Dict[str, List[st
     ----------
     path : Path
         The path to save the final CSV file to.
-    omniclass : OmniClass
-        The OmniClass value. This is used to generate the filename.
+    omniclass : Omniclass
+        The Omniclass value. This is used to generate the filename.
     kv_columns : Dict[str, List[str]]
         A dictionary of parameter names to lists of values.
 
