@@ -1,4 +1,5 @@
 import os
+from asyncio import sleep
 from typing import ClassVar
 
 import aiohttp
@@ -61,6 +62,11 @@ class BaseSearchHandler:
                         print(f"Got status code {resp.status} from Google API.")
                         print(await resp.text())
                         continue
+                    # repeat search if 5XX error is returned
+                    if 500 <= resp.status < 600:
+                        print(f"Got status code {resp.status} from Google API. Retrying after 30 secs...")
+                        await sleep(30)
+                        await self.perform_search(query, num_results)
                     data = await resp.json()
                     try:
                         items = data['items']
