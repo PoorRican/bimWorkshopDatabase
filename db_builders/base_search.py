@@ -1,4 +1,5 @@
 import os
+import warnings
 from asyncio import sleep
 from typing import ClassVar
 
@@ -29,6 +30,11 @@ class BaseSearchHandler:
                                              'AppleWebKit/537.36 (KHTML, like Gecko) '
                                              'Chrome/120.0.0.0 Safari/537.36'
                                }
+    retry_count: int
+    MAX_RETRY_COUNT: ClassVar[int] = 3
+
+    def __init__(self):
+        self.retry_count = 0
 
     async def perform_search(self, query: str, num_results: int = 100) -> list[SearchResultItem]:
         """ Perform a search using the Google custom search API
@@ -58,15 +64,24 @@ class BaseSearchHandler:
                     url += f"&num={num_results}"
 
                 async with session.get(url) as resp:
+
+                    # repeat search if 5XX error is returned
+                    if 500 <= resp.status < 600:
+                        if self.retry_count >= self.MAX_RETRY_COUNT:
+                            warnings.warn(f"Got status code {resp.status} from Google API. "
+                                          f"Retried {self.retry_count} times. Skipping...")
+                            continue
+                        self.retry_count += 1
+                        print(f"Got status code {resp.status} from Google API. Retrying after 30 secs...")
+                        await sleep(30)
+                        await self.perform_search(query, num_results)
                     if resp.status != 200:
                         print(f"Got status code {resp.status} from Google API.")
                         print(await resp.text())
                         continue
-                    # repeat search if 5XX error is returned
-                    if 500 <= resp.status < 600:
-                        print(f"Got status code {resp.status} from Google API. Retrying after 30 secs...")
-                        await sleep(30)
-                        await self.perform_search(query, num_results)
+
+                    self.retry_count = 0
+
                     data = await resp.json()
                     try:
                         items = data['items']
