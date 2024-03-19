@@ -31,7 +31,7 @@ class BaseSearchHandler:
                                              'Chrome/120.0.0.0 Safari/537.36'
                                }
     retry_count: int
-    MAX_RETRY_COUNT: ClassVar[int] = 3
+    MAX_RETRY_COUNT: ClassVar[int] = 5
 
     def __init__(self):
         self.retry_count = 0
@@ -72,17 +72,16 @@ class BaseSearchHandler:
                     url += f"&num={num_results}"
 
                 async with session.get(url) as resp:
-                    # repeat search if 4XX or 5XX error is returned
-                    if 400 <= resp.status < 600:
+                    # repeat search if 429 or 5XX error is returned
+                    if 500 <= resp.status < 600 or resp.status == 429:
                         if self.retry_count >= self.MAX_RETRY_COUNT:
                             print(await resp.text())
                             raise RuntimeError(f"Got status code {resp.status} from Google API. "
                                                f"Retried {self.retry_count} times. Skipping...")
                         self.retry_count += 1
-                        await sleep(30)
+                        await sleep(15)
                         await self.perform_search(query, num_results)
                     if resp.status != 200:
-                        print(await resp.text())
                         raise RuntimeError(f"Got status code {resp.status} from Google API.")
 
                     self.retry_count = 0
