@@ -1,10 +1,10 @@
 import csv
 from pathlib import Path
 
-from db_builders.typedefs import OmniClass
+from db_builders.typedefs import Omniclass
 
 
-def parse_remaining(path: Path) -> list[OmniClass]:
+def parse_remaining(path: Path) -> list[Omniclass]:
     """ Parse the "remaining_omniclass.csv" file.
 
     Parameters
@@ -25,7 +25,7 @@ def parse_remaining(path: Path) -> list[OmniClass]:
         reader = csv.reader(f)
 
         for row in reader:
-            omniclass = OmniClass(number=row[0], name=row[1])
+            omniclass = Omniclass(number=row[0], name=row[1])
             omniclass_names.append(omniclass)
 
     return omniclass_names

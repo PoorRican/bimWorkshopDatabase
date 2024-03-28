@@ -2,14 +2,14 @@ from asyncio import sleep, gather
 from pathlib import Path
 
 from db_builders.omniclass.builder_functions import generate_parameters, generate_all_values, save_product
-from db_builders.typedefs import OmniClass
+from db_builders.typedefs import Omniclass
 
 
 CHUNK_SIZE = 3
 OMNICLASS_SAVE_PATH = Path('data/omniclass_tables')
 
 
-async def _process_product(omniclass: OmniClass):
+async def _process_product(omniclass: Omniclass):
     """ Begin to process a single omniclass product.
 
     This is used as a coroutine in `generate_omniclass_tables` to execute in parallel.
@@ -27,7 +27,7 @@ async def _process_product(omniclass: OmniClass):
     print(f"\n*** ...Done processing {omniclass_name}. ***\n")
 
 
-async def generate_omniclass_tables(omniclasses: list[OmniClass]):
+async def generate_omniclass_tables(omniclasses: list[Omniclass]):
     """ Generate omniclass tables for a given list of omniclass objects.
 
     This is the main entry point for the omniclass table generation runtime and should be the only function
