@@ -71,7 +71,7 @@ class BaseSearchHandler:
                 if num_results < 10:
                     url += f"&num={num_results}"
 
-                async with session.get(url) as resp:
+                async with session.get(url, verify_ssl=False) as resp:
                     # repeat search if 429 or 5XX error is returned
                     if 500 <= resp.status < 600 or resp.status == 429:
                         if self.retry_count >= self.MAX_RETRY_COUNT:
