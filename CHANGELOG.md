@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.0.4 (2023-04-6)
+
+### Bug fixes
+
+- Fix part in `EXCLUDE_LIST` which was identifying false-positives
+
+---
+
 ## 0.0.3-3 (2023-04-5)
 
 ### Bug fixes

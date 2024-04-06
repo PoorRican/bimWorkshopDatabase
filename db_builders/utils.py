@@ -11,7 +11,7 @@ from db_builders.typedefs import SearchResultItem
 EXCLUDE_LIST = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowes', 'homedepot', 'walmart',
                 'target.com', '.gov', 'acehardware', 'business', 'news', 'alibaba', 'aliexpress', 'wikipedia',
                 'youtube', 'facebook', 'twitter', 'instagram', 'pinterest', 'linkedin', 'yelp', 'bbb', 'glassdoor',
-                'biz', 'bloomberg', 'forbes.com', 'fortune.com', 'inc', 'investopedia', 'money', 'nasdaq', 'nyse',
+                'biz', 'bloomberg', 'forbes.com', 'fortune.com', 'inc.com', 'investopedia', 'money', 'nasdaq', 'nyse',
                 'reuters', 'seekingalpha', 'stocktwits', 'thestreet', 'wsj', 'yahoo', 'yahoofinance', 'zacks.com',
                 'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr',
                 'samsclub', 'costco', 'overstock', 'sears', 'kmart', 'wayfair', 'etsy']
