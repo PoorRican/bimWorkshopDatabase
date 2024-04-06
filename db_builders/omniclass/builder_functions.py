@@ -6,6 +6,7 @@ from typing import List, Dict, Coroutine, Any
 
 from langchain_core.messages import AIMessage
 from openai import RateLimitError
+from pydantic_core import ValidationError
 
 from .chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
 from db_builders.typedefs import Omniclass, Parameter
@@ -76,13 +77,15 @@ async def generate_values(product_name: str, ai_message: AIMessage, parameter_na
         try:
             values = await _generate_values(product_name, parameter_name, ai_message)
             if len(values) == 20:
-                return Parameter(name=parameter_name, values=values)
+                return Parameter(name=parameter_name, values=[str(val) for val in values])
             else:
                 print(f"Got less than 20 values for {feedback_msg}, retrying...")
         except RateLimitError:
             await sleep(30)
         except SyntaxError:
             print(f"Could not understand response when generating values for {feedback_msg}, retrying...")
+        except ValidationError:
+            print(f"Validation error when generating values for {feedback_msg}, retrying...")
 
 
 def save_product(path: Path, omniclass: Omniclass, kv_columns: Dict[str, List[str]]) -> None:
