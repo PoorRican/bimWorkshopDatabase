@@ -1,8 +1,16 @@
 # CHANGELOG
 
+## 0.0.4-2 (2023-04-6)
+
+- HOT FIX: Refine part in `EXCLUDE_LIST` which was identifying false-positives
+
+---
+
 ## 0.0.4-1 (2023-04-6)
 
 - HOT FIX: Refine part in `EXCLUDE_LIST` which was identifying false-positives
+
+---
 
 ## 0.0.4 (2023-04-6)
 

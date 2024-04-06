@@ -13,7 +13,7 @@ EXCLUDE_LIST = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowe
                 'youtube', 'facebook', 'twitter', 'instagram', 'pinterest', 'linkedin', 'yelp', 'bbb', 'glassdoor',
                 'biz', 'bloomberg', 'forbes.com', 'fortune.com', '.inc.com', 'investopedia', 'money', 'nasdaq', 'nyse',
                 'reuters', 'seekingalpha', 'stocktwits', 'thestreet', 'wsj', 'yahoo', 'yahoofinance', 'zacks.com',
-                'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr',
+                'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr.com',
                 'samsclub', 'costco', 'overstock', 'sears', 'kmart', 'wayfair', 'etsy']
 
 
