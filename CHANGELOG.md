@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.4-3 (2023-04-6)
+
+- Added parts to `EXCLUDE_LIST` which were identifying false-positives based on database analysis
+
 ## 0.0.4-2 (2023-04-6)
 
 - HOT FIX: Refine part in `EXCLUDE_LIST` which was identifying false-positives

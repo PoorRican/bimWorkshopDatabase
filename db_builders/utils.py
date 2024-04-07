@@ -14,7 +14,15 @@ EXCLUDE_LIST = ['amazon', 'china', 'india', 'co.uk', '.cn', '.in', 'ebay', 'lowe
                 'biz', 'bloomberg', 'forbes.com', 'fortune.com', '.inc.com', 'investopedia', 'money', 'nasdaq', 'nyse',
                 'reuters', 'seekingalpha', 'stocktwits', 'thestreet', 'wsj', 'yahoo', 'yahoofinance', 'zacks.com',
                 'barrons.com', 'bloomberg', 'cnbc', 'cnn', 'foxbusiness', 'marketwatch', 'msn', 'newsmax', 'npr.com',
-                'samsclub', 'costco', 'overstock', 'sears', 'kmart', 'wayfair', 'etsy']
+                'samsclub', 'costco', 'overstock', 'sears', 'kmart', 'wayfair', 'etsy', 'chegg.com', 'coursehero.com',
+                'quizlet.com', 'sparknotes.com', 'wikipedia.org', 'britannica.com', 'dictionary.com', 'thesaurus.com',
+                'merriam-webster.com', 'grammarly.com', 'grammarbook.com', 'grammar-monster.com', 'grammarly.com',
+                'petsmart.com', 'petco.com', 'petfoodexpress.com', 'petland.com', 'petvalu.com', 'petlandia.com',
+                'petlandstores.com', 'petland.ca', 'petlanddiscounts.com', 'petland.com.au', 'petlandflorida.com'
+                'medium.com', 'quora.com', 'reddit.com', 'stackexchange.com', 'stackoverflow.com', 'github.com',
+                'substack.com', 'dev.to', 'hackernoon.com', 'towardsdatascience.com', 'analyticsvidhya.com',
+                'kaggle.com', 'towardsdatascience.com', 'towardsdatascience.com', 'towardsdatascience.com',
+                ]
 
 
 def retry_on_ratelimit():
