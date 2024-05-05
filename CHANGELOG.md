@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.5 (2024-05-5)
+
+- Make `Omniclass.number` optional
+
 ## 0.0.4-3 (2023-04-6)
 
 - Added parts to `EXCLUDE_LIST` which were identifying false-positives based on database analysis

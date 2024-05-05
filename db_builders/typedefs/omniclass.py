@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,10 +9,12 @@ class Omniclass(BaseModel):
 
     This is used to store the name of the product and the name of the CSV file that was generated for it.
     """
-    number: str
+    number: Optional[str] = None
     name: str
 
     def __str__(self):
+        if self.number is None:
+            return self.name
         return f"{self.number} {self.name}"
 
     @property
@@ -25,6 +28,11 @@ class Omniclass(BaseModel):
     @staticmethod
     def parse_identifier(identifier: str) -> tuple[str, str]:
         """ Parse an Omniclass identifier into the omniclass number and name.
+
+        # NOTE
+
+        In v0.0.5, the `Omniclass` class was updated to allow for the `number` field to be optional.
+        Be aware that this function is only able to parse the identifier if the `number` field is present.
 
         Parameters:
             identifier (str): The identifier to parse.
