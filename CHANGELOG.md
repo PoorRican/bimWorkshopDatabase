@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.6 (2024-05-9)
+
+- Change `generate_all_values` to generate `Parameter` objects instead of dictionaries
+
 ## 0.0.5 (2024-05-5)
 
 - Make `Omniclass.number` optional

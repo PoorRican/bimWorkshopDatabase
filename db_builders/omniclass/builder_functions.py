@@ -2,13 +2,14 @@ import asyncio
 import csv
 from asyncio import sleep
 from pathlib import Path
-from typing import List, Dict, Coroutine, Any
+from typing import List, Coroutine, Any
 
 from langchain_core.messages import AIMessage
 from openai import RateLimitError
 from pydantic_core import ValidationError
 
-from .chains import build_parameter_chain, build_parameter_value_chain, extract_list_from_response, build_formatter_chain
+from .chains import (build_parameter_chain, build_parameter_value_chain, extract_list_from_response,
+                     build_formatter_chain)
 from db_builders.typedefs import Omniclass, Parameter
 from db_builders.llm import GPT3_LOW_T, GPT3_HIGH_T
 
@@ -48,19 +49,19 @@ def value_coroutines(product_name: str, ai_message: AIMessage,
     return [generate_values(product_name, ai_message, parameter) for parameter in parameters]
 
 
-async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> Dict[str, List[str]]:
+async def generate_all_values(product_name: str, parameters: list[str], ai_message: AIMessage) -> List[Parameter]:
     """ Generate all values for a given product in a synchronous manner.
 
     This is to be used when locally generating a CSV file.
     """
     tasks = value_coroutines(product_name, ai_message, parameters)
 
-    kv_columns = {}
+    with_values = []
 
     for parameter in await asyncio.gather(*tasks):
-        kv_columns[parameter.name] = parameter.values
+        with_values.append(parameter)
 
-    return kv_columns
+    return with_values
 
 
 async def _generate_values(product_name: str, parameter: str, ai_message: AIMessage) -> list[str]:
@@ -88,7 +89,7 @@ async def generate_values(product_name: str, ai_message: AIMessage, parameter_na
             print(f"Validation error when generating values for {feedback_msg}, retrying...")
 
 
-def save_product(path: Path, omniclass: Omniclass, kv_columns: Dict[str, List[str]]) -> None:
+def save_product(path: Path, omniclass: Omniclass, parameters: List[Parameter]) -> None:
     """ Save a product's parameters and values to a CSV file.
 
     Parameters
@@ -97,8 +98,8 @@ def save_product(path: Path, omniclass: Omniclass, kv_columns: Dict[str, List[st
         The path to save the final CSV file to.
     omniclass : Omniclass
         The Omniclass value. This is used to generate the filename.
-    kv_columns : Dict[str, List[str]]
-        A dictionary of parameter names to lists of values.
+    parameters : List[Parameter]
+        A list of parameter values
 
     Returns
     -------
@@ -109,8 +110,9 @@ def save_product(path: Path, omniclass: Omniclass, kv_columns: Dict[str, List[st
 
     with open(fn_path, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow([i for i in kv_columns.keys()])
+        writer.writerow([i.name for i in parameters])
 
         # write values
-        for i in range(len(kv_columns.keys())):
-            writer.writerow([kv_columns[k][i] for k in kv_columns.keys()])
+        for i in range(len(parameters)):
+            parameter = parameters[i]
+            writer.writerow([v for v in parameter.values])
